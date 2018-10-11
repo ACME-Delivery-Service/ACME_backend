@@ -1,0 +1,10 @@
+version: "3.0"
+
+services:
+  pg:
+    image: postgres:9.4-alpine
+    environment:
+      - POSTGRES_USER=acme_db
+      - POSTGRES_PASSWORD=hahaha
+    ports:
+      - "5432:5432"
