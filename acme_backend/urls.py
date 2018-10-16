@@ -16,8 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.urlpatterns import format_suffix_patterns
+from web_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls'))
+    path('parcels/', views.parcelList.as_view()),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

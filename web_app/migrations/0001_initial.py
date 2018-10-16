@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
             name='DeliveryOperator',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Contact')),
+                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.Contact')),
             ],
         ),
         migrations.CreateModel(
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_on', models.TimeField()),
                 ('status', models.CharField(max_length=20)),
-                ('dispatch_order_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.DispatchOrder')),
+                ('dispatch_order_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.DispatchOrder')),
             ],
         ),
         migrations.CreateModel(
@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('transportation_types', models.CharField(max_length=50)),
-                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Contact')),
+                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.Contact')),
             ],
         ),
         migrations.CreateModel(
@@ -95,22 +95,22 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('max_capacity', models.FloatField()),
                 ('is_active', models.BooleanField(default=True)),
-                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Contact')),
+                ('contact_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.Contact')),
             ],
         ),
         migrations.AddField(
             model_name='incomingorder',
             name='parcel_id',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Parcel'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.Parcel'),
         ),
         migrations.AddField(
             model_name='dispatchstatus',
             name='warehouse_id',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Warehouse'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.Warehouse'),
         ),
         migrations.AddField(
             model_name='dispatchorder',
             name='incoming_order_id',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.IncomingOrder'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='web_app.IncomingOrder'),
         ),
     ]
