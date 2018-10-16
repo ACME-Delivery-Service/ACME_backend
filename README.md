@@ -46,5 +46,5 @@ pip install uwsgi
 ```
 
 ```
-uwsgi --home /application --chdir /application -w back_app.wsgi
+uwsgi --home /application --chdir /application -w backend_app.wsgi
 ```
