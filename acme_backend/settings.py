@@ -24,7 +24,10 @@ SECRET_KEY = 'm0v9k9i@26qzqrrdtd)9tcv4k4d^ec3ctw_(#c7)(50p$&kwk!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'backend.acme-company.site'
+]
 
 # Application definition
 
@@ -56,8 +59,7 @@ ROOT_URLCONF = 'acme_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
