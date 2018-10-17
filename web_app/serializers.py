@@ -5,5 +5,10 @@ from .models import *
 class parcelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parcel
-        # fields = ('weight', 'volume', 'shape')
+        fields = '__all__'
+
+
+class userSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
         fields = '__all__'
