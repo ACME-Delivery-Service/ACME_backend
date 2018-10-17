@@ -26,7 +26,9 @@ Runs DB setup
 ```
 python3 manage.py migrate
 python3 manage.py createsuperuser
+python3 manage.py collectstatic
 ```
+> superuser: login=root password=acme_admin
 
 ## Start server
 ```
@@ -42,7 +44,8 @@ python3 manage.py makemigrations
 # Working with Nginx
 ```
 aptitude install nginx python3-dev
-pip install uwsgi
+aptitude install libpcre3 libpcre3-dev
+pip install uwsgi -I --no-cache-dir
 ```
 
 ```
