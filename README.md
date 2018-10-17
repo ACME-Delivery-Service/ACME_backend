@@ -46,6 +46,10 @@ python3 manage.py makemigrations
 aptitude install nginx python3-dev
 aptitude install libpcre3 libpcre3-dev
 pip install uwsgi -I --no-cache-dir
+
+mkdir /run/uwsgi
+chmod 777 -R /run/uwsgi
+uwsgi --ini config/backend_uwsgi.ini
 ```
 
 ```
