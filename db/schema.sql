@@ -1,9 +1,10 @@
+CREATE TYPE shape_type AS ENUM ('postcard', 'letter', 'large_envelope', 'parcel');
+
 CREATE TABLE parcels (
     parcel_id serial PRIMARY KEY,
     weight REAL NOT NULL,
     volume REAL NOT NULL,
-    /* TODO: define ENUM of standard shapes */
-    shape VARCHAR(100) NOT NULL
+    shape shape_type NOT NULL
 );
 
 CREATE TABLE incoming_orders (
@@ -57,10 +58,11 @@ CREATE TABLE warehouses (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TYPE dispatch_status_type AS ENUM ('created', 'approved', 'en_rout', 'stored', 'delivered');
+
 CREATE TABLE dispatch_status (
     created_on TIMESTAMP NOT NULL,
-    /* TODO: make ENUM of all possible statuses. */
-    status VARCHAR(20) NOT NULL,
+    status dispatch_status_type NOT NULL,
     warehouse_id INTEGER /* OPTIONAL */,
 
     dispatch_order_id INTEGER NOT NULL,
@@ -76,20 +78,39 @@ CREATE TABLE dispatch_status (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-/* TODO: Add 'next_vector' parameter. */
-CREATE TABLE transportation_vectors (
-    vector_id serial PRIMARY KEY,
-    weather VARCHAR(50) NOT NULL,
-    traffic VARCHAR(255) NOT NULL
-);
+CREATE TYPE transportation_vector_assignment AS ENUM ('delivery_operator', 'transportation_company');
 
-/* TODO: Fix relation between routes, vectors and operators. */
+CREATE TYPE transport_type AS ENUM ('airplane', 'truck', 'barge');
+
 CREATE TABLE transportation_routes (
     route_id serial PRIMARY KEY,
-    transport_type VARCHAR(50) NOT NULL,
+    transport_type transport_type NOT NULL,
     start_location VARCHAR(255) NOT NULL,
     end_location VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE transportation_vectors (
+    vector_id serial PRIMARY KEY,
+    weather VARCHAR(50) NOT NULL,
+    traffic VARCHAR(255) NOT NULL,
+    next_vector_id INTEGER,
+    route_id INTEGER NOT NULL,
+    assigned transportation_vector_assignment NOT NULL,
+    assigned_contact_id INTEGER NOT NULL,
+    CONSTRAINT next_vector_id_recursive
+        FOREIGN KEY (next_vector_id)
+        REFERENCES transportation_vectors (vector_id)
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT transportation_routes_route_id
+        FOREIGN KEY (route_id)
+        REFERENCES transportation_routes (route_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT contcats_assigned_contact_id
+        FOREIGN KEY (assigned_contact_id)
+        REFERENCES contacts (contact_id)
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
 
 CREATE TABLE delivery_operators (
     operator_id serial PRIMARY KEY,
@@ -104,8 +125,7 @@ CREATE TABLE delivery_operators (
 CREATE TABLE transportation_companies (
     company_id serial PRIMARY KEY,
     contact_id INTEGER NOT NULL,
-    /* TODO: Should we create separate table or enum for types? */
-    transportation_types VARCHAR(50),
+    transportation_types transport_type[],
 
     CONSTRAINT transportation_companies_contact_id_fkey
         FOREIGN KEY (contact_id)
