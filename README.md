@@ -50,5 +50,14 @@ pip install uwsgi -I --no-cache-dir
 mkdir /run/uwsgi
 chmod 777 -R /run/uwsgi
 
-uwsgi --ini config/backend_uwsgi.ini
+uwsgi --ini config/uwsgi/backend.ini
+```
+
+## Setup Emperor
+```
+mkdir /etc/uwsgi/vassals
+
+# link uwsgi ini files
+
+systemctl start emperor.uwsgi.service
 ```
