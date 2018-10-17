@@ -49,9 +49,6 @@ pip install uwsgi -I --no-cache-dir
 
 mkdir /run/uwsgi
 chmod 777 -R /run/uwsgi
-uwsgi --ini config/backend_uwsgi.ini
-```
 
-```
-uwsgi --home /application --chdir /application -w backend_app.wsgi
+uwsgi --ini config/backend_uwsgi.ini
 ```
