@@ -3,7 +3,7 @@ Description=uWSGI Emperor
 After=syslog.target
 
 [Service]
-ExecStart=/bin/chown -R uwsgi:uwsgi /run/uwsgi
+ExecStart=/bin/mkdir 777 /run/uwsgi
 ExecStart=/usr/local/bin/uwsgi --ini /etc/uwsgi/emperor.ini
 # Requires systemd version 211 or newer
 RuntimeDirectory=uwsgi
