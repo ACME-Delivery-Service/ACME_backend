@@ -55,9 +55,11 @@ uwsgi --ini config/uwsgi/backend.ini
 
 ## Setup Emperor
 ```
+mkdir /etc/uwsgi
 mkdir /etc/uwsgi/vassals
 
-# link uwsgi ini files
+# link uwsgi ini files in /etc/uwsgi/
+# link uwsgi service files in /etc/systemd/system/
 
-systemctl start emperor.uwsgi.service
+systemctl start emperor.uwsgi
 ```
