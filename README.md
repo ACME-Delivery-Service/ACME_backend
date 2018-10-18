@@ -26,7 +26,9 @@ Runs DB setup
 ```
 python3 manage.py migrate
 python3 manage.py createsuperuser
+python3 manage.py collectstatic
 ```
+> superuser: login=root password=acme_admin
 
 ## Start server
 ```
@@ -42,9 +44,22 @@ python3 manage.py makemigrations
 # Working with Nginx
 ```
 aptitude install nginx python3-dev
-pip install uwsgi
+aptitude install libpcre3 libpcre3-dev
+pip install uwsgi -I --no-cache-dir
+
+mkdir /run/uwsgi
+chmod 777 -R /run/uwsgi
+
+uwsgi --ini config/uwsgi/backend.ini
 ```
 
+## Setup Emperor
 ```
-uwsgi --home /application --chdir /application -w backend_app.wsgi
+mkdir /etc/uwsgi
+mkdir /etc/uwsgi/vassals
+
+# link uwsgi ini files in /etc/uwsgi/
+# link uwsgi service files in /etc/systemd/system/
+
+systemctl start emperor.uwsgi
 ```
