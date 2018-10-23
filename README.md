@@ -10,7 +10,7 @@ easy_install3 pip
 Python specific:
 ```
 # Install Django and its extensions
-pip install django djangorestframework django-rest-swagger
+pip install django djangorestframework django-rest-auth
 # Install Postgres module
 pip install psycopg2-binary
 ```
