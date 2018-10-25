@@ -113,21 +113,26 @@ CREATE TABLE user_roles(
 	FOREIGN KEY(user_id) REFERENCES acmee_users(user_id)
 );
 
-CREATE TABLE delivery_operators (
-    operator_id serial PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    CONSTRAINT acmee_user_id_fkey
-        FOREIGN KEY (user_id)
-        REFERENCES acmee_users (user_id)
-        ON UPDATE NO ACTION ON DELETE RESTRICT
-);
-
 CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed');
 
 CREATE TABLE locations (
     location_id serial PRIMARY KEY,
     location_address VARCHAR(255),
     lat_long point NOT NULL
+);
+
+CREATE TABLE delivery_operators (
+    operator_id INTEGER PRIMARY KEY,
+    current_pos INTEGER,
+    pos_last_updated TIMESTAMP,
+    CONSTRAINT acmee_user_id_fkey
+        FOREIGN KEY (operator_id)
+        REFERENCES acmee_users (user_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT current_pos_id_fkey
+        FOREIGN KEY (current_pos)
+        REFERENCES locations(location_id)
+        ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 CREATE TABLE order_deliveries (
