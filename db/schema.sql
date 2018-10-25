@@ -3,6 +3,7 @@ CREATE TYPE shape_type AS ENUM ('postcard', 'letter', 'large_envelope', 'parcel'
 CREATE TABLE incoming_orders (
     order_id serial PRIMARY KEY,
     created_on TIMESTAMP NOT NULL,
+    comment TEXT,
     priority INTEGER NOT NULL
 );
 
@@ -65,11 +66,11 @@ CREATE TABLE dispatch_status (
     status dispatch_status_type NOT NULL,
     warehouse_id INTEGER /* OPTIONAL */,
 
-    dispatch_order_id INTEGER NOT NULL,
+    order_id INTEGER NOT NULL,
     CONSTRAINT dispatch_status_pkey
-        PRIMARY KEY (dispatch_order_id, created_on),
+        PRIMARY KEY (order_id, created_on),
     CONSTRAINT dispatch_status_dispatch_order_fkey
-        FOREIGN KEY (dispatch_order_id)
+        FOREIGN KEY (order_id)
         REFERENCES dispatch_orders (order_id)
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT dispatch_status_warehouse_id_fkey
@@ -130,14 +131,14 @@ CREATE TABLE locations (
 );
 
 CREATE TABLE order_deliveries (
-    dispatch_order_id INTEGER NOT NULL,
+    order_id INTEGER NOT NULL,
     delivery_operator_id INTEGER NOT NULL,
     delivery_status delivery_status_type NOT NULL,
     start_location_id INTEGER NOT NULL,
     end_location_id INTEGER NOT NULL,
 
-    CONSTRAINT dispatch_order_id_fkey
-        FOREIGN KEY (dispatch_order_id)
+    CONSTRAINT order_id_fkey
+        FOREIGN KEY (order_id)
         REFERENCES dispatch_orders (order_id)
         ON UPDATE NO ACTION ON DELETE CASCADE,
     CONSTRAINT delivery_operator_id_fkey
@@ -153,6 +154,6 @@ CREATE TABLE order_deliveries (
         REFERENCES locations (location_id)
         ON UPDATE NO ACTION ON DELETE RESTRICT,
     CONSTRAINT order_deliveries_pkey   
-        PRIMARY KEY (dispatch_order_id, delivery_operator_id) 
+        PRIMARY KEY (order_id, delivery_operator_id) 
 );
 
