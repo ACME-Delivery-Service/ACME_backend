@@ -80,14 +80,44 @@ CREATE TABLE dispatch_status (
 
 CREATE TYPE transport_type AS ENUM ('airplane', 'truck', 'barge');
 
-CREATE TABLE delivery_operators (
-    operator_id serial PRIMARY KEY,
+CREATE TYPE acmee_location AS ENUM ('EU', 'RU', 'CH', 'UK');
+
+CREATE TYPE acmee_role AS ENUM ('CEO', 'DO', 'CO', 'CS', 'CD');
+
+CREATE TABLE acmee_users (
+	user_id SERIAL PRIMARY KEY,
+	password BYTEA NOT NULL, /* HASH OF THE PASSWORD IS STORED AS ARRAY OF BYTES */
+	name VARCHAR(255) NOT NULL,
+	user_location acmee_location NOT NULL,
+	email VARCHAR(255) NOT NULL UNIQUE,
     contact_id INTEGER NOT NULL,
 
-    CONSTRAINT delivery_operators_contact_id
+    CONSTRAINT contact_id_fkey
         FOREIGN KEY (contact_id)
         REFERENCES contacts (contact_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE login(
+	user_id INTEGER PRIMARY KEY,
+	last_logged_in TIMESTAMP NOT NULL,
+	FOREIGN KEY(user_id) REFERENCES acmee_users(user_id)
+);
+	
+CREATE TABLE user_roles(
+	user_id serial,
+	role acmee_role,
+	PRIMARY KEY(user_id),
+	FOREIGN KEY(user_id) REFERENCES acmee_users(user_id)
+);
+
+CREATE TABLE delivery_operators (
+    operator_id serial PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    CONSTRAINT acmee_user_id_fkey
+        FOREIGN KEY (user_id)
+        REFERENCES acmee_users (user_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT
 );
 
 CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed');
@@ -122,3 +152,4 @@ CREATE TABLE order_deliveries (
         REFERENCES locations (location_id)
         ON UPDATE NO ACTION ON DELETE RESTRICT    
 );
+
