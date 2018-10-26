@@ -16,12 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from web_app import views
+from web_app.view_sets import UserViewSet
 # from web_app.views import login
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('parcels/', views.parcelList.as_view()),
-    path('rest-auth/', include('rest_auth.urls')),
+    path('user/', UserViewSet)
     # path('api/login', login),
 ]
 
