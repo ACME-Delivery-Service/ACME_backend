@@ -22,7 +22,7 @@ from web_app.view_sets.DriverViewSet import DriverViewSet
 from web_app.view_sets.OrderViewSet import OrderViewSet
 from web_app.view_sets.CustomerViewSet import CustomerViewSet
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register(r'account', AccountViewSet, base_name='account')
 router.register(r'driver', DriverViewSet, base_name='driver')
 router.register(r'order', OrderViewSet, base_name='order')

@@ -23,3 +23,7 @@ class AccountViewSet(viewsets.ViewSet):
 
         token, _ = Token.objects.get_or_create()
         return Response({'token': token.key}, status=HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def logout(self, request):
+        return Response(status=HTTP_200_OK)
