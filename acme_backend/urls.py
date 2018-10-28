@@ -27,9 +27,9 @@ router.register(r'account', AccountViewSet, base_name='account')
 router.register(r'driver', DriverViewSet, base_name='driver')
 router.register(r'order', OrderViewSet, base_name='order')
 router.register(r'customer', CustomerViewSet, base_name='customer')
+#print(router.urls)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
-print(router.urls)
 urlpatterns += router.urls
