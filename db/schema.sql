@@ -1,32 +1,5 @@
 CREATE TYPE shape_type AS ENUM ('postcard', 'letter', 'large_envelope', 'parcel');
 
-CREATE TABLE parcels (
-    parcel_id serial PRIMARY KEY,
-    weight REAL NOT NULL,
-    volume REAL NOT NULL,
-    shape shape_type NOT NULL
-);
-
-CREATE TABLE incoming_orders (
-    order_id serial PRIMARY KEY,
-    created_on TIMESTAMP NOT NULL,
-    priority INTEGER NOT NULL,
-
-    parcel_id INTEGER,
-    CONSTRAINT incoming_orders_order_id_fkey
-        FOREIGN KEY (parcel_id)
-        REFERENCES parcels (parcel_id)
-        ON UPDATE RESTRICT ON DELETE RESTRICT
-);
-
-CREATE TABLE dispatch_orders (
-    incoming_order_id INTEGER PRIMARY KEY,
-    CONSTRAINT dispatch_order_incoming_order_id_fkey
-        FOREIGN KEY (incoming_order_id)
-        REFERENCES incoming_orders (order_id)
-        ON UPDATE RESTRICT ON DELETE RESTRICT
-);
-
 CREATE TABLE contacts (
     contact_id serial PRIMARY KEY,
     /*** Fields for general information ***/
@@ -41,13 +14,73 @@ CREATE TABLE contacts (
     company VARCHAR(255)
 );
 
+CREATE TABLE acme_customers (
+	customer_id SERIAL PRIMARY KEY,
+    contact_id INTEGER NOT NULL,
+    CONSTRAINT contact_id_fkey
+        FOREIGN KEY (contact_id)
+        REFERENCES contacts (contact_id)
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE locations (
+    location_id serial PRIMARY KEY,
+    location_address VARCHAR(255),
+    lat_long point NOT NULL
+);
+
+/*** 
+Shows the time period at which delivery operator was active
+Used to calculate working hours of the delivery operator.
+ ***/
+CREATE TYPE delivery_period AS (
+    start_time TIMESTAMP,
+    end_time TIMESTAMP
+);
+
+CREATE TABLE acme_orders (
+    order_id serial PRIMARY KEY,
+    created_on TIMESTAMP NOT NULL,
+    comment TEXT,
+    customer_id INTEGER NOT NULL,
+    priority INTEGER NOT NULL,
+    start_location_id INTEGER,
+    end_location_id INTEGER,
+    scheduled_time delivery_period,
+    CONSTRAINT start_location_id_fkey
+        FOREIGN KEY (start_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT end_location_id_fkey
+        FOREIGN KEY (end_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT customer_id_fkey
+        FOREIGN KEY (customer_id)
+        REFERENCES acme_customers (customer_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT
+);
+
+CREATE TABLE parcels (
+    parcel_id serial PRIMARY KEY,
+    weight REAL NOT NULL,
+    dimensions REAL[3] NOT NULL,
+    shape shape_type NOT NULL,
+    order_id INTEGER,
+    CONSTRAINT order_id_fkey
+        FOREIGN KEY (order_id)
+        REFERENCES acme_orders (order_id)
+        ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
 CREATE TABLE warehouses (
     warehouse_id serial PRIMARY KEY,
+    warehouse_name VARCHAR(255),
     contact_id INTEGER NOT NULL,
     /** Area of warehouse m^2
      */
     max_capacity REAL NOT NULL,
-    /** For backward compatibility with old orders
+    /** For backward compatibility with old acme_orders
      * in case warehouse shuts down.
      */
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -58,77 +91,91 @@ CREATE TABLE warehouses (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TYPE dispatch_status_type AS ENUM ('created', 'approved', 'en_rout', 'stored', 'delivered');
+CREATE TYPE order_status_type AS ENUM ('created', 'approved', 'en_rout', 'stored', 'delivered');
 
-CREATE TABLE dispatch_status (
+CREATE TABLE acme_order_status (
     created_on TIMESTAMP NOT NULL,
-    status dispatch_status_type NOT NULL,
+    status order_status_type NOT NULL,
     warehouse_id INTEGER /* OPTIONAL */,
 
-    dispatch_order_id INTEGER NOT NULL,
-    CONSTRAINT dispatch_status_pkey
-        PRIMARY KEY (dispatch_order_id, created_on),
-    CONSTRAINT dispatch_status_dispatch_order_fkey
-        FOREIGN KEY (dispatch_order_id)
-        REFERENCES dispatch_orders (incoming_order_id)
+    order_id INTEGER NOT NULL,
+    CONSTRAINT order_status_pkey
+        PRIMARY KEY (order_id, created_on),
+    CONSTRAINT order_status_dispatch_order_fkey
+        FOREIGN KEY (order_id)
+        REFERENCES acme_orders (order_id)
         ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT dispatch_status_warehouse_id_fkey
+    CONSTRAINT order_status_warehouse_id_fkey
         FOREIGN KEY (warehouse_id)
         REFERENCES warehouses (warehouse_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TYPE transportation_vector_assignment AS ENUM ('delivery_operator', 'transportation_company');
+CREATE TYPE acme_location AS ENUM ('EU', 'RU', 'CH', 'UK');
 
-CREATE TYPE transport_type AS ENUM ('airplane', 'truck', 'barge');
+CREATE TYPE acme_role AS ENUM ('CEO', 'DO', 'CO', 'CS', 'CD');
 
-CREATE TABLE transportation_routes (
-    route_id serial PRIMARY KEY,
-    transport_type transport_type NOT NULL,
-    start_location VARCHAR(255) NOT NULL,
-    end_location VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE transportation_vectors (
-    vector_id serial PRIMARY KEY,
-    weather VARCHAR(50) NOT NULL,
-    traffic VARCHAR(255) NOT NULL,
-    next_vector_id INTEGER,
-    route_id INTEGER NOT NULL,
-    assigned transportation_vector_assignment NOT NULL,
-    assigned_contact_id INTEGER NOT NULL,
-    CONSTRAINT next_vector_id_recursive
-        FOREIGN KEY (next_vector_id)
-        REFERENCES transportation_vectors (vector_id)
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT transportation_routes_route_id
-        FOREIGN KEY (route_id)
-        REFERENCES transportation_routes (route_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT contcats_assigned_contact_id
-        FOREIGN KEY (assigned_contact_id)
+CREATE TABLE acme_users (
+	user_id SERIAL PRIMARY KEY,
+	password BYTEA NOT NULL, /* HASH OF THE PASSWORD IS STORED AS ARRAY OF BYTES */
+	user_location acme_location NOT NULL,
+	email VARCHAR(255) NOT NULL UNIQUE,
+    contact_id INTEGER NOT NULL,
+    token VARCHAR(255) UNIQUE,
+    file_url VARCHAR(255),
+    CONSTRAINT contact_id_fkey
+        FOREIGN KEY (contact_id)
         REFERENCES contacts (contact_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+	
+CREATE TABLE user_roles(
+	user_id serial,
+	role acme_role,
+	PRIMARY KEY(user_id),
+	FOREIGN KEY(user_id) REFERENCES acme_users(user_id)
+);
 
+CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed');
 
 CREATE TABLE delivery_operators (
-    operator_id serial PRIMARY KEY,
-    contact_id INTEGER NOT NULL,
-
-    CONSTRAINT delivery_operators_contact_id
-        FOREIGN KEY (contact_id)
-        REFERENCES contacts (contact_id)
+    operator_id INTEGER PRIMARY KEY,
+    current_pos INTEGER,
+    pos_last_updated TIMESTAMP,
+    CONSTRAINT acme_user_id_fkey
+        FOREIGN KEY (operator_id)
+        REFERENCES acme_users (user_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT current_pos_id_fkey
+        FOREIGN KEY (current_pos)
+        REFERENCES locations(location_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TABLE transportation_companies (
-    company_id serial PRIMARY KEY,
-    contact_id INTEGER NOT NULL,
-    transportation_types transport_type[],
-
-    CONSTRAINT transportation_companies_contact_id_fkey
-        FOREIGN KEY (contact_id)
-        REFERENCES contacts (contact_id)
-        ON UPDATE RESTRICT ON DELETE RESTRICT
+CREATE TABLE order_deliveries (
+    order_id INTEGER NOT NULL,
+    delivery_operator_id INTEGER NOT NULL,
+    delivery_status delivery_status_type NOT NULL,
+    start_location_id INTEGER NOT NULL,
+    end_location_id INTEGER NOT NULL,
+    active_time_periods delivery_period[],
+    CONSTRAINT order_id_fkey
+        FOREIGN KEY (order_id)
+        REFERENCES acme_orders (order_id)
+        ON UPDATE NO ACTION ON DELETE CASCADE,
+    CONSTRAINT delivery_operator_id_fkey
+        FOREIGN KEY (delivery_operator_id)
+        REFERENCES delivery_operators (operator_id)
+        ON UPDATE NO ACTION ON DELETE CASCADE,
+    CONSTRAINT start_location_id_fkey
+        FOREIGN KEY (start_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT end_location_id_fkey
+        FOREIGN KEY (end_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT order_deliveries_pkey   
+        PRIMARY KEY (order_id, delivery_operator_id) 
 );
+
