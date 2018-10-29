@@ -23,12 +23,38 @@ CREATE TABLE acme_customers (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TABLE locations (
+    location_id serial PRIMARY KEY,
+    location_address VARCHAR(255),
+    lat_long point NOT NULL
+);
+
+/*** 
+Shows the time period at which delivery operator was active
+Used to calculate working hours of the delivery operator.
+ ***/
+CREATE TYPE delivery_period AS (
+    start_time TIMESTAMP,
+    end_time TIMESTAMP
+);
+
 CREATE TABLE acme_orders (
     order_id serial PRIMARY KEY,
     created_on TIMESTAMP NOT NULL,
     comment TEXT,
     customer_id INTEGER NOT NULL,
     priority INTEGER NOT NULL,
+    start_location_id INTEGER,
+    end_location_id INTEGER,
+    scheduled_time delivery_period,
+    CONSTRAINT start_location_id_fkey
+        FOREIGN KEY (start_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
+    CONSTRAINT end_location_id_fkey
+        FOREIGN KEY (end_location_id)
+        REFERENCES locations (location_id)
+        ON UPDATE NO ACTION ON DELETE RESTRICT,
     CONSTRAINT customer_id_fkey
         FOREIGN KEY (customer_id)
         REFERENCES acme_customers (customer_id)
@@ -112,12 +138,6 @@ CREATE TABLE user_roles(
 
 CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed');
 
-CREATE TABLE locations (
-    location_id serial PRIMARY KEY,
-    location_address VARCHAR(255),
-    lat_long point NOT NULL
-);
-
 CREATE TABLE delivery_operators (
     operator_id INTEGER PRIMARY KEY,
     current_pos INTEGER,
@@ -130,15 +150,6 @@ CREATE TABLE delivery_operators (
         FOREIGN KEY (current_pos)
         REFERENCES locations(location_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-/*** 
-Shows the time period at which delivery operator was active
-Used to calculate working hours of the delivery operator.
- ***/
-CREATE TYPE delivery_period AS (
-    start_time TIMESTAMP,
-    end_time TIMESTAMP
 );
 
 CREATE TABLE order_deliveries (
