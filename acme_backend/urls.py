@@ -13,21 +13,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from pprint import pprint
 from django.contrib import admin
 from django.urls import path
 
-from rest_framework.routers import DefaultRouter
+from acme_backend.settings import DEBUG
+from web_app.routers import ApiRouter
 from web_app.view_sets.AccountViewSet import AccountViewSet
 from web_app.view_sets.DriverViewSet import DriverViewSet
 from web_app.view_sets.OrderViewSet import OrderViewSet
 from web_app.view_sets.CustomerViewSet import CustomerViewSet
 
-router = DefaultRouter(trailing_slash=False)
+router = ApiRouter(trailing_slash=False)
 router.register(r'account', AccountViewSet, base_name='account')
 router.register(r'driver', DriverViewSet, base_name='driver')
 router.register(r'order', OrderViewSet, base_name='order')
 router.register(r'customer', CustomerViewSet, base_name='customer')
-#print(router.urls)
+
+if DEBUG:
+    pprint(router.urls)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
