@@ -96,7 +96,7 @@ class OrderViewSet(viewsets.ViewSet):
     def list(self, request):
         return Response({
             'total_count': 123,
-            'results': {
+            'results': [{
                 'id': 1,
                 'delivery_period': {
                     'start': '23.04.2018',
@@ -117,5 +117,5 @@ class OrderViewSet(viewsets.ViewSet):
                         'longitude': 42445698.3
                     }
                 }
-            }
+            }]
         }, status=HTTP_200_OK)

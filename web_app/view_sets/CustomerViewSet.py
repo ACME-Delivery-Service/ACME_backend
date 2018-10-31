@@ -5,5 +5,8 @@ from rest_framework.status import HTTP_200_OK
 
 class CustomerViewSet(viewsets.ViewSet):
 
-    def t(self, request):
-        return Response(status=HTTP_200_OK)
+    def info(self, request):
+        return Response({'name': 'John Vorbob',
+                         'photo': '',
+                         'phone_number': '+79991764478'},
+                        status=HTTP_200_OK)
