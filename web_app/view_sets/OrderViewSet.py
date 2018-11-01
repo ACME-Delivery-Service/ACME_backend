@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 
 class OrderViewSet(viewsets.ViewSet):
@@ -23,10 +23,13 @@ class OrderViewSet(viewsets.ViewSet):
             else:
                 return Response({'msg': 'pending'}, status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def info(self, request):
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def info(self, request, pk=None):
+        if not pk:
+            return Response({'msg': 'No ID provided'}, HTTP_400_BAD_REQUEST)
+
         return Response({
-            'id': 1,
+            'id': pk,
             'delivery_period': {
                 'start': '2018-12-25 12:20:00',
                 'end': '2018-01-25 10:10:00'
