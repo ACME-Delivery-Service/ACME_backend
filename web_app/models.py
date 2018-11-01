@@ -1,12 +1,11 @@
 from django.db import models
-from django.contrib.gis.geos import Point  # TODO: CHECK FOR POINT TYPE
+from django.contrib.gis.geos import Point
 from django.contrib.postgres.fields import ArrayField
 
 from enum import Enum
 
 
 class Contact(models.Model):
-    contact_id = models.CharField()
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
     additional_info = models.TextField()
@@ -26,7 +25,7 @@ class AcmeCustomer(models.Model):
 
 class Location(models.Model):
     location_address = models.CharField(max_length=255)
-    lat_long = Point()  # TODO: Check that it's right
+    lat_long = Point()
 
 
 class DeliveryPeriod(models.Field):
@@ -140,7 +139,7 @@ class AcmeUser(models.Model):
 
 
 class UserRole(models.Model):
-    user_id = models.ForeignKey(AcmeUser)
+    user_id = models.ForeignKey(AcmeUser, on_delete=models.DO_NOTHING)
     role = models.CharField(choices=[(tag, tag.value) for tag in AcmeRoles])
 
     @property
