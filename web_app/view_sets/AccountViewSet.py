@@ -33,6 +33,7 @@ class AccountViewSet(viewsets.ViewSet):
             'id': 1,
             'email': 'j.doe@innopolis.ru',
             'location': 'RU',
+            'avatar_url': 'http://fanaru.com/avatar/image/240677-avatar-http-www-hdwallpapers-in-walls-jake_sully_avatar_disguise-wide-jpg.jpg',
             'contacts': {
                 'address': 'Unsupported yet',
                 'phone_number': '8(800)555-35-35',
