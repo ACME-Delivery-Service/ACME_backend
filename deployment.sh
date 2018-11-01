@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 systemctl stop emperor.uwsgi
 
 git pull

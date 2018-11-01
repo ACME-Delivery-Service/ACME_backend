@@ -40,7 +40,8 @@ class OrderViewSet(viewsets.ViewSet):
                 'location': {
                     'latitude': 12343526.31,
                     'longitude': 42445698.7
-                }},
+                }
+            },
             'address_to': {
                 'address': 'Infinite loop, 1, Cupertino, CA, USA',
                 'location': {
