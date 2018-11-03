@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.gis.geos import Point
 from django.contrib.postgres.fields import ArrayField
 
 from enum import Enum
@@ -22,10 +21,13 @@ class AcmeCustomer(models.Model):
     def customer_contact_id(self):
         return self.contact_id.id
 
+class Coordinates(models.Field):
+    x = models.FloatField()
+    y = models.FloatField()
 
 class Location(models.Model):
     location_address = models.CharField(max_length=255)
-    lat_long = Point()
+    lat_long = Coordinates()
 
 
 class DeliveryPeriod(models.Field):
@@ -38,8 +40,8 @@ class AcmeOrder(models.Model):
     comment = models.TextField()
     customer_id = models.ForeignKey(AcmeCustomer, on_delete=models.PROTECT)
     priority = models.IntegerField()
-    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT)
-    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT)
+    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT,related_name="acme_order_start_location")
+    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT,related_name="acme_order_end_location")
     scheduled_time = DeliveryPeriod()
 
     @property
@@ -65,7 +67,7 @@ class ShapeTypes(Enum):
 class Parcel(models.Model):
     weight = models.FloatField()
     dimension = ArrayField(models.FloatField(), size=3)
-    shape = models.CharField(choices=[(tag, tag.value) for tag in ShapeTypes])
+    shape = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in ShapeTypes])
     order_id = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE)
 
     @property
@@ -94,7 +96,7 @@ class OrderStatusType(Enum):
 
 class AcmeOrderStatus(models.Model):
     created_on = models.DateTimeField()
-    status = models.CharField(choices=[(tag, tag.value) for tag in OrderStatusType])
+    status = models.CharField(max_length=20,choices=[(tag, tag.value) for tag in OrderStatusType])
     warehouse_id = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
     order_id = models.ForeignKey(AcmeOrder, on_delete=models.PROTECT)
 
@@ -126,8 +128,8 @@ class AcmeRoles(Enum):
 
 
 class AcmeUser(models.Model):
-    password = models.CharField()
-    user_location = models.CharField(max_legth=5, choices=[(tag, tag.value) for tag in AcmeLocations])
+    password = models.CharField(max_length=16)
+    user_location = models.CharField(max_length=5, choices=[(tag, tag.value) for tag in AcmeLocations])
     email = models.EmailField(max_length=255, unique=True)
     contact_id = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
@@ -140,7 +142,7 @@ class AcmeUser(models.Model):
 
 class UserRole(models.Model):
     user_id = models.ForeignKey(AcmeUser, on_delete=models.DO_NOTHING)
-    role = models.CharField(choices=[(tag, tag.value) for tag in AcmeRoles])
+    role = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in AcmeRoles])
 
     @property
     def roles_users_id(self):
@@ -170,10 +172,10 @@ class DeliveryOperator(models.Model):
 class OrderDelivery(models.Model):
     order_id = models.ForeignKey(AcmeUser, on_delete=models.CASCADE)
     delivery_operator_id = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
-    delivery_status = models.CharField(choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
-    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT)
-    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT)
-    active_time_period = ArrayField(DeliveryPeriod)
+    delivery_status = models.CharField(max_length=20,choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
+    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
+    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
+    active_time_period = ArrayField(DeliveryPeriod())
 
     class Meta:
         unique_together = (('order_id', 'delivery_operator_id'))
