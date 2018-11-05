@@ -15,10 +15,8 @@ class AccountViewSet(viewsets.ViewSet):
         password = request.data.get("password")
         if not email or not password:
             return Response({'msg': 'Please provide both email and password'}, status=HTTP_400_BAD_REQUEST)
-        if email != 'j.doe@innopolis.ru':
-            return Response({'msg': 'User not found'}, status=HTTP_400_BAD_REQUEST)
-        if password != '12345678':
-            return Response({'msg': 'Invalid password'}, status=HTTP_400_BAD_REQUEST)
+        if email != 'j.doe@innopolis.ru' or password != '12345678':
+            return Response({'msg': 'Invalid login credentials'}, status=HTTP_400_BAD_REQUEST)
 
         token, _ = Token.objects.get_or_create()
         return Response({'token': token.key}, status=HTTP_200_OK)
@@ -33,6 +31,7 @@ class AccountViewSet(viewsets.ViewSet):
             'id': 1,
             'email': 'j.doe@innopolis.ru',
             'location': 'RU',
+            'avatar_url': 'http://fanaru.com/avatar/image/240677-avatar-http-www-hdwallpapers-in-walls-jake_sully_avatar_disguise-wide-jpg.jpg',
             'contacts': {
                 'address': 'Unsupported yet',
                 'phone_number': '8(800)555-35-35',
