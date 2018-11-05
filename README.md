@@ -28,6 +28,15 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 python3 manage.py collectstatic
 ```
+
+Create DB user
+```
+# su - postgres
+# psql
+
+> GRANT ALL PRIVILEGES ON DATABASE acme_db TO acme_db;
+> CREATE USER acme_db WITH ENCRYPTED PASSWORD 'hahaha';
+```
 > superuser: login=root password=acme_admin
 
 ## Start server
