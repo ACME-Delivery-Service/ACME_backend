@@ -23,10 +23,15 @@ CREATE TABLE acme_customers (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TYPE coordinates AS(
+    x REAL,
+    y REAL
+);
+
 CREATE TABLE locations (
     location_id serial PRIMARY KEY,
     location_address VARCHAR(255),
-    lat_long point NOT NULL
+    lat_long coordinates NOT NULL
 );
 
 /*** 

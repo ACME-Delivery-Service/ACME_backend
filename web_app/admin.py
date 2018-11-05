@@ -2,13 +2,20 @@ from django.contrib import admin
 from .models import *
 
 # Register your models here.
-admin.site.register(Parcel)
-admin.site.register(IncomingOrder)
 admin.site.register(Contact)
+admin.site.register(AcmeCustomer)
+
+admin.site.register(Location)
+admin.site.register(AcmeOrder)
+
+admin.site.register(Parcel)
 admin.site.register(Warehouse)
-admin.site.register(DispatchStatus)
-admin.site.register(TransportationVector)
-admin.site.register(TransportationRoutes)
+admin.site.register(AcmeOrderStatus)
+
+
+admin.site.register(AcmeUser)
+admin.site.register(UserRole)
+
 admin.site.register(DeliveryOperator)
-admin.site.register(TransportationCompany)
-admin.site.register(DispatchOrder)
+admin.site.register(OrderDelivery)
+
