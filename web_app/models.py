@@ -158,7 +158,7 @@ class DeliveryStatusTypes(Enum):
 
 
 class DeliveryOperator(models.Model):
-    operator_id = models.ForeignKey(AcmeUser, on_delete=models.PROTECT)
+    operator_id = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, primary_key=True)
     current_pos = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     pos_last_updated = models.DateTimeField()
 
