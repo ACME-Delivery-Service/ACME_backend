@@ -89,7 +89,8 @@ class DriverViewSet(viewsets.ViewSet):
                     'location': {
                         'latitude': 12343526.31,
                         'longitude': 42445698.7
-                    }},
+                    }
+                },
                 'address_to': {
                     'address': 'Infinite loop, 1, Cupertino, CA, USA',
                     'location': {
@@ -139,15 +140,15 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST', 'GET'], permission_classes=[IsAuthenticated])
     def location(self, request):
-        #todo
+        # todo
         return Response(status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        #todo
+        # todo
         return Response(status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request):
-        #todo
+        # todo
         return Response(status=HTTP_200_OK)

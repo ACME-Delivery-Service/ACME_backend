@@ -108,8 +108,8 @@ class OrderViewSet(viewsets.ViewSet):
             'results': [{
                 'id': 1,
                 'delivery_period': {
-                    'start': '2018-03-22',
-                    'end': '2018-20-07'
+                    'start': '2018-12-25 12:20:00',
+                    'end': '2018-01-25 10:10:00'
                 },
                 'priority': 123,
                 'address_to': {
