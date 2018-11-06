@@ -21,9 +21,11 @@ class AcmeCustomer(models.Model):
     def customer_contact_id(self):
         return self.contact_id.id
 
+
 class Coordinates(models.Field):
     x = models.FloatField()
     y = models.FloatField()
+
 
 class Location(models.Model):
     location_address = models.CharField(max_length=255)
@@ -40,8 +42,8 @@ class AcmeOrder(models.Model):
     comment = models.TextField()
     customer_id = models.ForeignKey(AcmeCustomer, on_delete=models.PROTECT)
     priority = models.IntegerField()
-    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT,related_name="acme_order_start_location")
-    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT,related_name="acme_order_end_location")
+    start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_start_location")
+    end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_end_location")
     scheduled_time = DeliveryPeriod()
 
     @property
@@ -96,7 +98,7 @@ class OrderStatusType(Enum):
 
 class AcmeOrderStatus(models.Model):
     created_on = models.DateTimeField()
-    status = models.CharField(max_length=20,choices=[(tag, tag.value) for tag in OrderStatusType])
+    status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in OrderStatusType])
     warehouse_id = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
     order_id = models.ForeignKey(AcmeOrder, on_delete=models.PROTECT)
 
@@ -172,7 +174,7 @@ class DeliveryOperator(models.Model):
 class OrderDelivery(models.Model):
     order_id = models.ForeignKey(AcmeUser, on_delete=models.CASCADE)
     delivery_operator_id = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
-    delivery_status = models.CharField(max_length=20,choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
+    delivery_status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
     start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
     active_time_period = ArrayField(DeliveryPeriod())
