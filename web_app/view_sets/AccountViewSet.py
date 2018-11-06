@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from web_app.exceptions import AcmeAPIException
+from web_app.permissions import IsAuthenticatedOrMeta
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -23,11 +24,11 @@ class AccountViewSet(viewsets.ViewSet):
         token, _ = Token.objects.get_or_create()
         return Response({'token': token.key}, status=HTTP_200_OK)
 
-    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticatedOrMeta])
     def logout(self, request):
         return Response(status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticatedOrMeta])
     def info(self, request):
         return Response({
             'id': 1,
