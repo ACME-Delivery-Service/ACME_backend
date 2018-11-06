@@ -1,4 +1,5 @@
 *
 
-!uploads/
+!uploads
+!uploads/*
 !.gitignore
