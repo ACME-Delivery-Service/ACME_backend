@@ -34,7 +34,7 @@ CREATE TABLE locations (
     lat_long coordinates NOT NULL
 );
 
-/*** 
+/***
 Shows the time period at which delivery operator was active
 Used to calculate working hours of the delivery operator.
  ***/
@@ -133,7 +133,7 @@ CREATE TABLE acme_users (
         REFERENCES contacts (contact_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
-	
+
 CREATE TABLE user_roles(
 	user_id serial,
 	role acme_role,
@@ -180,7 +180,7 @@ CREATE TABLE order_deliveries (
         FOREIGN KEY (end_location_id)
         REFERENCES locations (location_id)
         ON UPDATE NO ACTION ON DELETE RESTRICT,
-    CONSTRAINT order_deliveries_pkey   
-        PRIMARY KEY (order_id, delivery_operator_id) 
+    CONSTRAINT order_deliveries_pkey
+        PRIMARY KEY (order_id, delivery_operator_id)
 );
 
