@@ -170,12 +170,12 @@ class DeliveryOperator(models.Model):
 
 
 class OrderDelivery(models.Model):
-    order_id = models.ForeignKey(AcmeUser, on_delete=models.CASCADE)
+    order_id = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE)
     delivery_operator_id = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
     delivery_status = models.CharField(max_length=20,choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
     start_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location_id = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = ArrayField(DeliveryPeriod())
+    active_time_period = ArrayField(DeliveryPeriod(), null=True)
 
     class Meta:
         unique_together = (('order_id', 'delivery_operator_id'))
