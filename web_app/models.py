@@ -7,11 +7,11 @@ from enum import Enum
 class Contact(models.Model):
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
-    additional_info = models.TextField()
+    additional_info = models.TextField(null=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    position = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
+    position = models.CharField(max_length=255, null=True)
+    company = models.CharField(max_length=255, null=True)
 
 
 class AcmeCustomer(models.Model):
@@ -43,7 +43,7 @@ class DeliveryPeriod(models.Field):
 
 class AcmeOrder(models.Model):
     created_on = models.DateTimeField()
-    comment = models.TextField()
+    comment = models.TextField(null=True)
     customer = models.ForeignKey(AcmeCustomer, on_delete=models.PROTECT)
     priority = models.IntegerField()
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_start_location")
@@ -139,7 +139,7 @@ class AcmeUser(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
-    file_url = models.CharField(max_length=255)
+    file_url = models.CharField(max_length=255, null=True)
 
     @property
     def users_contact_id(self):
@@ -181,7 +181,7 @@ class OrderDelivery(models.Model):
     delivery_status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField()
+    active_time_period = JSONField(default=list)
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))
