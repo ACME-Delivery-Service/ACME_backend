@@ -22,7 +22,6 @@ class AcmeCustomer(models.Model):
         return self.contact.id
 
 
-
 class Coordinates(models.Field):
     x = models.FloatField()
     y = models.FloatField()
