@@ -23,15 +23,11 @@ CREATE TABLE acme_customers (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TYPE coordinates AS(
-    x REAL,
-    y REAL
-);
-
 CREATE TABLE locations (
     location_id serial PRIMARY KEY,
-    location_address VARCHAR(255),
-    lat_long coordinates NOT NULL
+    address VARCHAR(255),
+    longitude REAL NOT NULL,
+    latitude REAL NOT NULL,
 );
 
 /***
@@ -116,18 +112,18 @@ CREATE TABLE acme_order_status (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TYPE acme_location AS ENUM ('EU', 'RU', 'CH', 'UK');
+CREATE TYPE acme_region AS ENUM ('EU', 'RU', 'CH', 'UK');
 
 CREATE TYPE acme_role AS ENUM ('CEO', 'DO', 'CO', 'CS', 'CD');
 
 CREATE TABLE acme_users (
 	user_id SERIAL PRIMARY KEY,
 	password BYTEA NOT NULL, /* HASH OF THE PASSWORD IS STORED AS ARRAY OF BYTES */
-	user_location acme_location NOT NULL,
+	region acme_region NOT NULL,
 	email VARCHAR(255) NOT NULL UNIQUE,
     contact_id INTEGER NOT NULL,
     token VARCHAR(255) UNIQUE,
-    file_url VARCHAR(255),
+    avatar_url VARCHAR(255),
     CONSTRAINT contact_id_fkey
         FOREIGN KEY (contact_id)
         REFERENCES contacts (contact_id)
@@ -145,14 +141,14 @@ CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed')
 
 CREATE TABLE delivery_operators (
     operator_id INTEGER PRIMARY KEY,
-    current_pos INTEGER,
-    pos_last_updated TIMESTAMP,
+    current_location INTEGER,
+    location_last_updated TIMESTAMP,
     CONSTRAINT acme_user_id_fkey
         FOREIGN KEY (operator_id)
         REFERENCES acme_users (user_id)
         ON UPDATE NO ACTION ON DELETE RESTRICT,
-    CONSTRAINT current_pos_id_fkey
-        FOREIGN KEY (current_pos)
+    CONSTRAINT current_location_id_fkey
+        FOREIGN KEY (current_location)
         REFERENCES locations(location_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
