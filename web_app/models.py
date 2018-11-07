@@ -15,7 +15,7 @@ class Contact(models.Model):
 
 
 class AcmeCustomer(models.Model):
-    contact_id = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
+    contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
 
     @property
     def customer_contact_id(self):
@@ -158,9 +158,9 @@ class DeliveryStatusTypes(Enum):
 
 
 class DeliveryOperator(models.Model):
-    operator_id = models.ForeignKey(AcmeUser, on_delete=models.PROTECT)
-    current_pos = models.ForeignKey(Location, on_delete=models.DO_NOTHING)
-    pos_last_updated = models.DateTimeField()
+    operator_id = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, null=True)
+    current_pos = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
+    pos_last_updated = models.DateTimeField(null=True)
 
     @property
     def users_id(self):

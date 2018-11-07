@@ -1,29 +1,10 @@
-from django.http import HttpResponse, JsonResponse
-from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
 from web_app.serializers import *
 
 
-class CustomerViewSet(viewsets.ViewSet):
+class CustomerViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+    permission_classes = [IsAuthenticated, ]
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def info(self, request, pk=None):
-        try:
-            response = AcmeCustomer.objects.get(pk=pk)
-        except AcmeCustomer.DoesNotExist:
-            return HttpResponse(status=404)
+    serializer_class = AcmeCustomerSerializer
 
-        serializer = AcmeCustomer(response)
-        return JsonResponse(serializer.data)
-
-        # return Response({
-        #     'id': 1243,
-        #     'contacts': {
-        #         'first_name': 'Johnathan',
-        #         'last_name': 'Morrison',
-        #         'phone_number': '+1123412341234'
-        #     },
-        # }, status=HTTP_200_OK)
