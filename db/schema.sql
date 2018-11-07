@@ -96,7 +96,7 @@ CREATE TABLE warehouses (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TYPE order_status_type AS ENUM ('created', 'approved', 'en_rout', 'stored', 'delivered');
+CREATE TYPE order_status_type AS ENUM ('created', 'approved', 'en_route', 'stored', 'delivered');
 
 CREATE TABLE acme_order_status (
     created_on TIMESTAMP NOT NULL,
