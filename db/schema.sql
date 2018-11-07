@@ -15,7 +15,7 @@ CREATE TABLE contacts (
 );
 
 CREATE TABLE acme_customers (
-	customer_id SERIAL PRIMARY KEY,
+    customer_id SERIAL PRIMARY KEY,
     contact_id INTEGER NOT NULL,
     CONSTRAINT contact_id_fkey
         FOREIGN KEY (contact_id)
@@ -117,10 +117,10 @@ CREATE TYPE acme_region AS ENUM ('EU', 'RU', 'CH', 'UK');
 CREATE TYPE acme_role AS ENUM ('CEO', 'DO', 'CO', 'CS', 'CD');
 
 CREATE TABLE acme_users (
-	user_id SERIAL PRIMARY KEY,
-	password BYTEA NOT NULL, /* HASH OF THE PASSWORD IS STORED AS ARRAY OF BYTES */
-	region acme_region NOT NULL,
-	email VARCHAR(255) NOT NULL UNIQUE,
+    user_id SERIAL PRIMARY KEY,
+    password BYTEA NOT NULL, /* HASH OF THE PASSWORD IS STORED AS ARRAY OF BYTES */
+    region acme_region NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     contact_id INTEGER NOT NULL,
     token VARCHAR(255) UNIQUE,
     avatar_url VARCHAR(255),
@@ -131,10 +131,10 @@ CREATE TABLE acme_users (
 );
 
 CREATE TABLE user_roles(
-	user_id serial,
-	role acme_role,
-	PRIMARY KEY(user_id),
-	FOREIGN KEY(user_id) REFERENCES acme_users(user_id)
+    user_id serial,
+    role acme_role,
+    PRIMARY KEY(user_id),
+    FOREIGN KEY(user_id) REFERENCES acme_users(user_id)
 );
 
 CREATE TYPE delivery_status_type AS ENUM ('pending', 'in_progress', 'completed');
