@@ -90,13 +90,15 @@ class OrderViewSet(viewsets.ViewSet):
         except AcmeOrder.DoesNotExist:
             return Response({'msg': 'No ID provided'}, HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def location(self, request):
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def location(self, request, pk=None):
+        order = AcmeOrder.objects.get(pk=pk)
+        location = Location.objects.get(pk=order.start_location_id)
         return Response({
-            'id': 1,
+            'id': location.pk,
             'location': {
-                'latitude': 35664564.31,
-                'longitude': 67367546.3
+                'latitude': location.lat_long.x,
+                'longitude': location.lat_long.y
             }
         }, status=HTTP_200_OK)
 
