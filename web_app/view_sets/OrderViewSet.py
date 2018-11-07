@@ -34,6 +34,8 @@ class OrderViewSet(viewsets.ViewSet):
                 'start': '2018-12-25 12:20:00',
                 'end': '2018-01-25 10:10:00'
             },
+            'created_at': '1970-01-01 00:00:00',
+            'updated_at': '1980-01-01 00:00:00',
             'priority': 242,
             'address_from': {
                 'address': 'Infinite loop, 1, Cupertino, CA, USA',
@@ -71,7 +73,21 @@ class OrderViewSet(viewsets.ViewSet):
                     'phone_number': '+1123412341234'
                 },
             },
-            'status': 'pending'
+            'driver_info': {
+                'id': 1234,
+                'avatar': 'http',
+                'contacts': {
+                    'first_name': 'Johnathan',
+                    'last_name': 'Morrison',
+                    'phone_number': '+1123412341234'
+                },
+            },
+            'location': {
+                'latitude': 35664564.31,
+                'longitude': 67367546.3
+            },
+            'status': 'en_route',
+            'delivery_status': 'pending'
         }, status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
@@ -125,6 +141,15 @@ class OrderViewSet(viewsets.ViewSet):
                         'latitude': 12343526.31,
                         'longitude': 42445698.3
                     }
-                }
+                },
+                'status': 'en_route',
+                'is_assigned': True,
+                'delivery_operator': {
+                    'id': 123,
+                    'avatar': 'http',
+                    'contacts': {
+                        'phone_number': '+757488',
+                    }
+                },
             }]
         }, status=HTTP_200_OK)
