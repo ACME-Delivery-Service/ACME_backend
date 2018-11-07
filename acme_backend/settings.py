@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'web_app',
     'rest_framework.authtoken',
     'rest_auth',
+    'location_field.apps.DefaultConfig',
 ]
 
 MIDDLEWARE = [

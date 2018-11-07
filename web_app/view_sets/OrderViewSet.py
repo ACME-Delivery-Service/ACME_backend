@@ -3,25 +3,24 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from web_app.serializers import *
 
 
 class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def status(self, request):
-        status = request.data.get("status")
-        delivery_order_id = request.data.get("delivery_order_id")
+        status = AcmeOrderStatus.status
 
         if request.method == 'GET':
-            return Response(status=HTTP_200_OK)
+            return Response(status, status=HTTP_200_OK)
 
         elif request.method == 'POST':
-            if status == 'finished':
-                return Response(status=HTTP_200_OK)
-            elif status == 'in_process':
-                return Response(status=HTTP_200_OK)
-            else:
-                return Response({'msg': 'pending'}, status=HTTP_200_OK)
+            serializer = AcmeOrderStatus(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
@@ -103,28 +102,6 @@ class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        return Response({
-            'total_count': 123,
-            'results': [{
-                'id': 1,
-                'delivery_period': {
-                    'start': '2018-03-22',
-                    'end': '2018-20-07'
-                },
-                'priority': 123,
-                'address_to': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
-                    }
-                },
-                'address_from': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.3
-                    }
-                }
-            }]
-        }, status=HTTP_200_OK)
+        queryset = AcmeOrder.objects.all()
+        serializer = AcmeOrder(queryset, many=True)
+        return Response(serializer.data)

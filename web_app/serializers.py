@@ -8,7 +8,25 @@ class parcelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class userSerializer(serializers.ModelSerializer):
+class AcmeCustomer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = AcmeCustomer
+        fields = '__all__'
+
+
+class Contact(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
+
+class AcmeOrderStatus(serializers.ModelSerializer):
+    class Meta:
+        model = AcmeOrderStatus
+        fields = '__all__'
+
+
+class AcmeOrder(serializers.ModelSerializer):
+    class Meta:
+        model = AcmeOrder
         fields = '__all__'
