@@ -152,13 +152,40 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST', 'GET'], permission_classes=[IsAuthenticated])
     def location(self, request):
-        # todo
-        return Response(status=HTTP_200_OK)
+        if request.method == 'POST':
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response({
+                'id': 123,
+                'location': {
+                    'latitude': 123.312,
+                    'longitude': 321.234,
+                },
+                'location_updated_at': '1970-01-01 10:10:10',
+            }, status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        # todo
-        return Response(status=HTTP_200_OK)
+        return Response({
+            'total_count': 1,
+            'results': [
+                {
+                    'id': 123,
+                    'avatar': 'http',
+                    'contacts': {
+                        'first_name': 'Johnathan',
+                        'last_name': 'Morrison',
+                        'phone_number': '+1123412341234'
+                    },
+                    'assigned_orders_count': 1,
+                    'in_progress_orders_count': 0,
+                    'location': {
+                        'latitude': 123.43,
+                        'longitude': 432.34
+                    }
+                }
+            ]
+        }, status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request):
