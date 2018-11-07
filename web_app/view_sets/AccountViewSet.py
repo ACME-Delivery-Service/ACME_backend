@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from web_app.exceptions import AcmeAPIException
+from web_app.models import AcmeUser
 from web_app.permissions import IsAuthenticatedOrMeta
 
 
@@ -21,7 +22,7 @@ class AccountViewSet(viewsets.ViewSet):
         if email != 'j.doe@innopolis.ru' or password != '12345678':
             raise AcmeAPIException('Invalid login credentials')
 
-        token, _ = Token.objects.get_or_create()
+        token, _ = Token.objects.get_or_create(user_id=1)
         return Response({'token': token.key}, status=HTTP_200_OK)
 
     @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticatedOrMeta])
