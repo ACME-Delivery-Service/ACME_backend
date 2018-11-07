@@ -15,9 +15,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             return AcmeOrderStatusSerializer()
         return AcmeOrderSerializer()
 
-    @action(detail=False, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def status(self, request, pk=None):
-
         if request.method == 'GET':
             status = get_object_or_404(AcmeOrderStatus.objects.all(), order_id__id=pk)
 
@@ -27,8 +26,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             serializer = AcmeOrderStatusSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=self.status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=self.status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=HTTP_200_OK)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
