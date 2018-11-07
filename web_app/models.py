@@ -91,7 +91,7 @@ class Warehouse(models.Model):
 class OrderStatusType(Enum):
     CREATED = 'created'
     APPROVED = 'approved'
-    EN_ROUT = 'en_rout'
+    EN_ROUTE = 'en_route'
     STORED = 'stored'
     DELIVERED = 'delivered'
 
