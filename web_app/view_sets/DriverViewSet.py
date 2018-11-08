@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
+from web_app.serializers import *
+from django.http import HttpResponse, JsonResponse
 
 
 class DriverViewSet(viewsets.ViewSet):
@@ -166,26 +168,15 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
+        # todo
+        drivers = AcmeUser.objects.all()
+        serializer = AcmeUserSerializer(drivers)
+        count = drivers.count()
         return Response({
-            'total_count': 1,
-            'results': [
-                {
-                    'id': 123,
-                    'avatar': 'http',
-                    'contacts': {
-                        'first_name': 'Johnathan',
-                        'last_name': 'Morrison',
-                        'phone_number': '+1123412341234'
-                    },
-                    'assigned_orders_count': 1,
-                    'in_progress_orders_count': 0,
-                    'location': {
-                        'latitude': 123.43,
-                        'longitude': 432.34
-                    }
-                }
-            ]
-        }, status=HTTP_200_OK)
+            'total_count': count,
+            'results': serializer.data
+        },
+            status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request):

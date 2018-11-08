@@ -26,3 +26,26 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcmeOrder
         fields = '__all__'
+
+
+class AcmeUserSerializer(serializers.ModelSerializer):
+    contact = ContactSerializer()
+
+    class Meta:
+        model = AcmeUser
+        fields = '__all__'
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
+
+
+class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
+    operator = AcmeUserSerializer()
+    current_pos = LocationSerializer()
+
+    class Meta:
+        model = DeliveryOperator
+        fields = '__all__'

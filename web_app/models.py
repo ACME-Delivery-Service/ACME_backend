@@ -123,6 +123,9 @@ class AcmeLocations(Enum):
     RU = 'RU'
     CH = 'CH'
     UK = 'UK'
+    @classmethod
+    def all(self):
+        return [AcmeLocations.EU,AcmeLocations.RU,AcmeLocations.CH,AcmeLocations.UK]
 
 
 class AcmeRoles(Enum):
@@ -135,7 +138,7 @@ class AcmeRoles(Enum):
 
 class AcmeUser(models.Model):
     password = models.CharField(max_length=16)
-    user_location = models.CharField(max_length=5, choices=[(tag, tag.value) for tag in AcmeLocations])
+    user_location = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeLocations.all()])
     email = models.EmailField(max_length=255, unique=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
