@@ -44,7 +44,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     operator = AcmeUserSerializer()
-    current_pos = LocationSerializer()
+    current_location = LocationSerializer()
 
     class Meta:
         model = DeliveryOperator

@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from web_app.serializers import *
+import json
 from django.http import HttpResponse, JsonResponse
 
 
@@ -169,12 +170,15 @@ class DriverViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
         # todo
-        drivers = AcmeUser.objects.all()
-        serializer = AcmeUserSerializer(drivers)
-        count = drivers.count()
+
+        drivers = DeliveryOperator.objects.all()
+        drivers_serialized = []
+        for driver in drivers:
+            serializer = AcmeDeliveryOperatorSerializer(driver)
+            drivers_serialized.append(serializer.data)
         return Response({
-            'total_count': count,
-            'results': serializer.data
+            'total_count': len(drivers_serialized),
+            'results': drivers_serialized
         },
             status=HTTP_200_OK)
 
