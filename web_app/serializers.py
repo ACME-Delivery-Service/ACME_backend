@@ -21,8 +21,15 @@ class AcmeOrderStatusSerializer(serializers.ModelSerializer):
         model = AcmeOrderStatus
         fields = '__all__'
 
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
 
 class AcmeOrderSerializer(serializers.ModelSerializer):
+    customer = AcmeCustomerSerializer()
+    start_location = LocationSerializer()
+    end_location = LocationSerializer()
     class Meta:
         model = AcmeOrder
         fields = '__all__'

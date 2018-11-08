@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from web_app.serializers import *
 
-from web_app.models import AcmeOrder, Location, Parcel, AcmeCustomer, Contact, AcmeOrderStatus
+from web_app.models import AcmeOrder, Location, Parcel, AcmeCustomer, Contact, AcmeOrderStatus, OrderDelivery
 import json
 
 
@@ -37,65 +37,13 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
     def info(self, request, pk=None):
         try:
             order = AcmeOrder.objects.get(pk=pk)
-            start_location = Location.objects.get(pk=order.start_location_id)
-            end_location = Location.objects.get(pk=order.end_location_id)
-            parcels = Parcel.objects.filter(order_id=pk)
-            customer = AcmeCustomer.objects.get(pk=order.customer_id)
-            customer_contact = Contact.objects.get(pk=customer.pk)
-            order_statuses = AcmeOrderStatus.objects.filter(order_id=order.pk)
-            current_status = order_statuses.order_by('created_on').last()
-            status = "None"
-            if current_status != None:
-                status = current_status.status
-            parcels_info = []
-            for parcel in parcels:
-                parcel_info = {
-                        'id': parcel.pk,
-                        'weight': parcel.weight,
-                        'dimensions': {
-                            'x': parcel.dimension[0],
-                            'y': parcel.dimension[1],
-                            'z': parcel.dimension[2],
-                        },
-                        'shape': parcel.shape,
-                        'description': "No description provided."
-                    }
-                parcels_info.append(parcel_info)
-            return Response({
-                'id': pk,
-                'delivery_period': {
-                    'start': order.scheduled_time.start_time,
-                    'end': order.scheduled_time.end_time
-                },
-                'priority': order.priority,
-                'address_from': {
-                    'address': start_location.location_address,
-                    'location': {
-                        'latitude': start_location.lat_long.x,
-                        'longitude': start_location.lat_long.y
-                    }
-                },
-                'address_to': {
-                    'address': end_location.location_address,
-                    'location': {
-                        'latitude': end_location.lat_long.x,
-                        'longitude': end_location.lat_long.y
-                    }
-                },
-                'description': order.comment,
-                'parcels_info': parcels_info,
-                'customer_info': {
-                    'id': customer.pk,
-                    'contacts': {
-                        'first_name': customer_contact.first_name,
-                        'last_name': customer_contact.last_name,
-                        'phone_number': customer_contact.phone_number
-                    },
-                },
-                'status': status
-            }, status=HTTP_200_OK)
-        except AcmeOrder.DoesNotExist:
-            return Response({'msg': 'No ID provided'}, HTTP_400_BAD_REQUEST)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Order is not found'}, HTTP_400_BAD_REQUEST)
+
+        serializer = AcmeOrderSerializer(order)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
+
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def location(self, request, pk=None):
