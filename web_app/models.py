@@ -22,14 +22,13 @@ class AcmeCustomer(models.Model):
         return self.contact.id
 
 
-class Coordinates(models.Field):
-    x = models.FloatField()
-    y = models.FloatField()
+
 
 
 class Location(models.Model):
-    location_address = models.CharField(max_length=255)
-    lat_long = Coordinates()
+    address = models.CharField(max_length=255)
+    longitude = models.FloatField()
+    latitude = models.FloatField()
 
 
 class DeliveryPeriod(models.Field):
@@ -118,14 +117,14 @@ class AcmeOrderStatus(models.Model):
         return self.order.id
 
 
-class AcmeLocations(Enum):
+class AcmeRegions(Enum):
     EU = 'EU'
     RU = 'RU'
     CH = 'CH'
     UK = 'UK'
     @classmethod
     def all(self):
-        return [AcmeLocations.EU,AcmeLocations.RU,AcmeLocations.CH,AcmeLocations.UK]
+        return [AcmeRegions.EU, AcmeRegions.RU, AcmeRegions.CH, AcmeRegions.UK]
 
 
 class AcmeRoles(Enum):
@@ -138,11 +137,11 @@ class AcmeRoles(Enum):
 
 class AcmeUser(models.Model):
     password = models.CharField(max_length=16)
-    user_location = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeLocations.all()])
+    region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
-    file_url = models.CharField(max_length=255)
+    avatar_url = models.CharField(max_length=255)
 
     @property
     def users_contact_id(self):
@@ -166,8 +165,8 @@ class DeliveryStatusTypes(Enum):
 
 class DeliveryOperator(models.Model):
     operator = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, null=True)
-    current_pos = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
-    pos_last_updated = models.DateTimeField(null=True)
+    current_location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
+    location_last_updated = models.DateTimeField(null=True)
 
     @property
     def users_id(self):
@@ -175,7 +174,7 @@ class DeliveryOperator(models.Model):
 
     @property
     def users_location_id(self):
-        return self.current_pos.id
+        return self.current_location.id
 
 
 class OrderDelivery(models.Model):
