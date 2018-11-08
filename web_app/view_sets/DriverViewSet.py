@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from web_app.serializers import *
 import json
 from django.http import HttpResponse, JsonResponse
@@ -182,8 +182,15 @@ class DriverViewSet(viewsets.ViewSet):
         },
             status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def info(self, request):
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def info(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+        serializer = AcmeDeliveryOperatorSerializer(driver)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
         return Response({
             'id': 123,
             'avatar': 'http',
