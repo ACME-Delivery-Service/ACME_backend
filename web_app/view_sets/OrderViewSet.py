@@ -81,7 +81,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             },
             'driver_info': {
                 'id': 1234,
-                'avatar': 'http',
+                'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
                 'contacts': {
                     'first_name': 'Johnathan',
                     'last_name': 'Morrison',
@@ -152,9 +152,11 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
                 'is_assigned': True,
                 'delivery_operator': {
                     'id': 123,
-                    'avatar': 'http',
+                    'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
                     'contacts': {
-                        'phone_number': '+757488',
+                        'first_name': 'Johnathan',
+                        'last_name': 'Morrison',
+                        'phone_number': '8(800)555-35-35',
                     }
                 },
             }]
