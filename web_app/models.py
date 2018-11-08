@@ -31,13 +31,11 @@ class Location(models.Model):
     latitude = models.FloatField()
 
 
-class DeliveryPeriod(models.Field):
+'''class DeliveryPeriod(models.Field):
     start_time = models.DateTimeField(null=False)
-    end_time = models.DateTimeField(null=False)
+    end_time = models.DateTimeField(null=False) '''
 
-    def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 104
-        super().__init__(*args, **kwargs)
+
 
 
 class AcmeOrder(models.Model):
@@ -47,19 +45,23 @@ class AcmeOrder(models.Model):
     priority = models.IntegerField()
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_end_location")
-    scheduled_time = DeliveryPeriod()
+    scheduled_time_start_time = models.DateTimeField() #Custom Type DeliveryPeriod
+    scheduled_time_end_time = models.DateTimeField() #Custom Type DeliveryPeriod
 
     @property
+    def customer_id_fkey(self):
+        return self.customer.id
+
+    '''@property
     def acme_order_start_location_id(self):
         return self.start_location.id
 
     @property
     def acme_order_end_location_id(self):
-        return self.end_location.id
+        return self.end_location.id 
+    '''
 
-    @property
-    def customer_id_fkey(self):
-        return self.customer.id
+
 
 
 class ShapeTypes(Enum):
@@ -183,7 +185,7 @@ class OrderDelivery(models.Model):
     delivery_status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField()
+    active_time_period = JSONField() #Customtype Array of DeliveryPeriod
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))
