@@ -113,13 +113,8 @@ class DriverViewSet(viewsets.ViewSet):
         }
 
     def format_pagination(self, request):
-        limit = request.get('limit')
-        offset = request.get('offset')
-
-        if not limit:
-            limit = None
-        if not offset:
-            offset = 0
+        limit = request.query_params.get('limit', None)
+        offset = request.query_params.get('offset', 0)
 
         return limit, offset
 
