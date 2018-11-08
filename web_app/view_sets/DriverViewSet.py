@@ -142,8 +142,16 @@ class DriverViewSet(viewsets.ViewSet):
     def current_orders(self, request):
         return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
-    def co_contact(self, request):
+    @action(detail=True, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
+    def co_contact(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+        control_operator = AcmeUser.objects.get(pk=driver.users_id)
+        serializer = AcmeUserSerializer(control_operator)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
         return Response({
             'id': 1243,
             'contacts': {
@@ -188,20 +196,8 @@ class DriverViewSet(viewsets.ViewSet):
             driver = DeliveryOperator.objects.get(pk=pk)
         except DeliveryOperator.DoesNotExist:
             return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+
         serializer = AcmeDeliveryOperatorSerializer(driver)
         return Response(serializer.data,
                         status=HTTP_200_OK)
-        return Response({
-            'id': 123,
-            'avatar': 'http',
-            'contacts': {
-                'first_name': 'Johnathan',
-                'last_name': 'Morrison',
-                'phone_number': '+1123412341234'
-            },
-            'location': {
-                'latitude': 35664564.31,
-                'longitude': 67367546.3
-            },
-            'location_update_time': '1970-01-01 10:10:10',
-        }, status=HTTP_200_OK)
+
