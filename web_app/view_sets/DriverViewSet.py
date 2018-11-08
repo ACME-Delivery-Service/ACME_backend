@@ -17,17 +17,17 @@ class DriverViewSet(viewsets.ViewSet):
                 },
                 'priority': 2,
                 'address_from': {
-                    'address': 'Infinite, 100, Cup, CA, USA',
+                    'address': 'Спортивная ул., 134-136, Иннополис, Респ. Татарстан, 422594',
                     'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.7
+                        'latitude': 55.750194,
+                        'longitude': 48.742944
                     }
                 },
                 'address_to': {
-                    'address': 'Inf loop, 1, Cuper, CA, USA',
+                    'address': 'Unnamed Road, Иннополис, Респ. Татарстан, 422591',
                     'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
+                        'latitude': 55.748224,
+                        'longitude': 48.741482
                     }
                 },
                 'delivery_status': 'pending',
@@ -40,10 +40,10 @@ class DriverViewSet(viewsets.ViewSet):
                 },
                 'priority': 2,
                 'address_from': {
-                    'address': 'Infinite, 100, Cup, CA, USA',
+                    'address': 'Университетская ул., Иннополис, Респ. Татарстан, 422594',
                     'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.7
+                        'latitude': 55.750138,
+                        'longitude': 48.753595
                     }
                 },
                 'address_to': {
@@ -66,16 +66,16 @@ class DriverViewSet(viewsets.ViewSet):
                 },
                 'priority': 242,
                 'address_from': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    'address': 'Центральная ул., Казань, Респ. Татарстан, 420049',
                     'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.7
+                        'latitude': 55.776223,
+                        'longitude': 49.148516
                     }},
                 'address_to': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    'address': 'Вахитовский р-н, Казань, Респ. Татарстан, 420021',
                     'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
+                        'latitude': 55.776685,
+                        'longitude': 49.116505
                     }
                 },
                 'delivery_status': 'in_progress',
@@ -88,17 +88,17 @@ class DriverViewSet(viewsets.ViewSet):
                 },
                 'priority': 242,
                 'address_from': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    'address': 'ул. Рихарда Зорге, Казань, Респ. Татарстан, 420101',
                     'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.7
+                        'latitude': 55.760942,
+                        'longitude': 49.189924
                     }
                 },
                 'address_to': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    'address': 'Профсоюзная ул., 8, Казань, Респ. Татарстан, 420111',
                     'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
+                        'latitude': 55.793669,
+                        'longitude': 49.110707
                     }
                 },
                 'delivery_status': 'in_progress',
