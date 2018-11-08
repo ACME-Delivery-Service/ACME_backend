@@ -56,3 +56,13 @@ class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryOperator
         fields = '__all__'
+
+
+class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
+    order = AcmeOrderSerializer()
+    delivery_operator = AcmeDeliveryOperatorSerializer()
+    start_location = LocationSerializer()
+    end_location = LocationSerializer()
+    class Meta:
+        model = OrderDelivery
+        fields = '__all__'
