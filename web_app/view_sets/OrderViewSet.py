@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from web_app.serializers import *
 
-from web_app.models import AcmeOrder, Location, Parcel, AcmeCustomer, Contact, AcmeOrderStatus, OrderDelivery
+from web_app.models import AcmeOrder, Location, AcmeOrderStatus
 import json
 
 
@@ -47,26 +47,31 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def location(self, request, pk=None):
-        order = AcmeOrder.objects.get(pk=pk)
-        location = Location.objects.get(pk=order.start_location_id)
-        return Response({
-            'id': location.pk,
-            'location': {
-                'latitude': location.lat_long.x,
-                'longitude': location.lat_long.y
-            }
-        }, status=HTTP_200_OK)
+        try:
+            order = AcmeOrder.objects.get(pk=pk)
+            status = AcmeOrderStatus.objects.filter(order_id=order.id).order_by('created_on').last()
+            location = Location.objects.first()
+            if status.status == 'created' or status.status == 'approved':
+                location = order.start_location
+            elif status.status == 'en_route':
+                delivery = OrderDelivery.objects.filter(order=order.id, delivery_status='in_progress').first()
+                location = delivery.delivery_operator.current_location
+            elif status.status == 'stored':
+                warehouse = Warehouse.objects.get(pk=status.warehouse)
+                location = Location.objects.first()
+            elif status.status == 'delivered':
+                location = order.end_location
+            return Response(LocationSerializer(location).data, status=HTTP_200_OK)
+        except Exception as e:
+            return Response({'msg': 'Order or its status were not found'}, HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
     def assign(self, request):
-        if request.method == 'GET':
-            return Response({
-                'id': 1,
-                'location': {
-                    'latitude': 35664564.31,
-                    'longitude': 67367546.3
-                }
-            }, status=HTTP_200_OK)
+        if request.method == 'POST':
+            order_id = request.POST['order_id']
+            driver_id = request.POST['driver_id']
+            #what to update there are multiple  drivers for order
+            return Response(status=HTTP_200_OK)
 
         elif request.method == 'POST':
             order_id = request.data.get("order_id")
