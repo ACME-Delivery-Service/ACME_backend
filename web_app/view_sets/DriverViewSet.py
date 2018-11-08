@@ -2,7 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from web_app.serializers import *
+import json
+from django.http import HttpResponse, JsonResponse
 
 
 class DriverViewSet(viewsets.ViewSet):
@@ -29,7 +32,8 @@ class DriverViewSet(viewsets.ViewSet):
                         'latitude': 35664564.31,
                         'longitude': 67367546.3
                     }
-                }
+                },
+                'delivery_status': 'pending',
             },
             {
                 'id': 2,
@@ -51,7 +55,8 @@ class DriverViewSet(viewsets.ViewSet):
                         'latitude': 35664564.31,
                         'longitude': 67367546.3
                     }
-                }
+                },
+                'delivery_status': 'pending',
             }
         ]
 
@@ -75,7 +80,8 @@ class DriverViewSet(viewsets.ViewSet):
                         'latitude': 35664564.31,
                         'longitude': 67367546.3
                     }
-                }
+                },
+                'delivery_status': 'in_progress',
             },
             {
                 'id': 4,
@@ -89,14 +95,16 @@ class DriverViewSet(viewsets.ViewSet):
                     'location': {
                         'latitude': 12343526.31,
                         'longitude': 42445698.7
-                    }},
+                    }
+                },
                 'address_to': {
                     'address': 'Infinite loop, 1, Cupertino, CA, USA',
                     'location': {
                         'latitude': 35664564.31,
                         'longitude': 67367546.3
                     }
-                }
+                },
+                'delivery_status': 'in_progress',
             }
         ]
 
@@ -126,8 +134,24 @@ class DriverViewSet(viewsets.ViewSet):
     def current(self, request):
         return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
-    def co_contact(self, request):
+    @action(detail=True, methods=['GET'], url_path='pending-orders', permission_classes=[IsAuthenticated])
+    def pending_orders(self, request):
+        return Response(self.extract_orders_list(1, 'pending', self.format_pagination(request)), status=HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], url_path='current-orders', permission_classes=[IsAuthenticated])
+    def current_orders(self, request):
+        return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
+    def co_contact(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+        control_operator = AcmeUser.objects.get(pk=driver.users_id)
+        serializer = AcmeUserSerializer(control_operator)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
         return Response({
             'id': 1243,
             'contacts': {
@@ -139,15 +163,41 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST', 'GET'], permission_classes=[IsAuthenticated])
     def location(self, request):
-        #todo
-        return Response(status=HTTP_200_OK)
+        if request.method == 'POST':
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response({
+                'id': 123,
+                'location': {
+                    'latitude': 123.312,
+                    'longitude': 321.234,
+                },
+                'location_updated_at': '1970-01-01 10:10:10',
+            }, status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        #todo
-        return Response(status=HTTP_200_OK)
+        # todo
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def info(self, request):
-        #todo
-        return Response(status=HTTP_200_OK)
+        drivers = DeliveryOperator.objects.all()
+        drivers_serialized = []
+        for driver in drivers:
+            serializer = AcmeDeliveryOperatorSerializer(driver)
+            drivers_serialized.append(serializer.data)
+        return Response({
+            'total_count': len(drivers_serialized),
+            'results': drivers_serialized
+        },
+            status=HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def info(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+
+        serializer = AcmeDeliveryOperatorSerializer(driver)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
+

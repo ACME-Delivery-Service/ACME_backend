@@ -2,13 +2,50 @@ from rest_framework import serializers
 from .models import *
 
 
-class parcelSerializer(serializers.ModelSerializer):
+class ContactSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Parcel
+        model = Contact
         fields = '__all__'
 
 
-class userSerializer(serializers.ModelSerializer):
+class AcmeCustomerSerializer(serializers.ModelSerializer):
+    contact = ContactSerializer()
+
     class Meta:
-        model = User
+        model = AcmeCustomer
+        fields = '__all__'
+
+
+class AcmeOrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcmeOrderStatus
+        fields = '__all__'
+
+
+class AcmeOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcmeOrder
+        fields = '__all__'
+
+
+class AcmeUserSerializer(serializers.ModelSerializer):
+    contact = ContactSerializer()
+
+    class Meta:
+        model = AcmeUser
+        fields = '__all__'
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
+
+
+class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
+    operator = AcmeUserSerializer()
+    current_location = LocationSerializer()
+
+    class Meta:
+        model = DeliveryOperator
         fields = '__all__'

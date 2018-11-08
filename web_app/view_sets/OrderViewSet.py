@@ -1,30 +1,37 @@
-from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from web_app.serializers import *
 
 from web_app.models import AcmeOrder, Location, Parcel, AcmeCustomer, Contact, AcmeOrderStatus
 import json
 
 
-class OrderViewSet(viewsets.ViewSet):
+class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated, ]
+
+    def get_serializer_class(self):
+        if self.action == 'status':
+            return AcmeOrderStatusSerializer()
+        return AcmeOrderSerializer()
 
     @action(detail=False, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
-    def status(self, request):
-        status = request.data.get("status")
-        delivery_order_id = request.data.get("delivery_order_id")
+    def status(self, request, pk=None):
 
         if request.method == 'GET':
-            return Response(status=HTTP_200_OK)
+            status = get_object_or_404(AcmeOrderStatus.objects.all(), order_id__id=pk)
+
+            return Response(self.get_serializer(status), status=HTTP_200_OK)
 
         elif request.method == 'POST':
-            if status == 'finished':
-                return Response(status=HTTP_200_OK)
-            elif status == 'in_process':
-                return Response(status=HTTP_200_OK)
-            else:
-                return Response({'msg': 'pending'}, status=HTTP_200_OK)
+            serializer = AcmeOrderStatusSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=self.status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=self.status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
@@ -126,8 +133,8 @@ class OrderViewSet(viewsets.ViewSet):
             'results': [{
                 'id': 1,
                 'delivery_period': {
-                    'start': '2018-03-22',
-                    'end': '2018-20-07'
+                    'start': '2018-12-25 12:20:00',
+                    'end': '2018-01-25 10:10:00'
                 },
                 'priority': 123,
                 'address_to': {
@@ -143,6 +150,15 @@ class OrderViewSet(viewsets.ViewSet):
                         'latitude': 12343526.31,
                         'longitude': 42445698.3
                     }
-                }
+                },
+                'status': 'en_route',
+                'is_assigned': True,
+                'delivery_operator': {
+                    'id': 123,
+                    'avatar': 'http',
+                    'contacts': {
+                        'phone_number': '+757488',
+                    }
+                },
             }]
         }, status=HTTP_200_OK)
