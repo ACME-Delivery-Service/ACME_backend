@@ -197,7 +197,7 @@ class OrderDelivery(models.Model):
                                        choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField(default=list) # Customtype Array of DeliveryPeriod
+    active_time_period = JSONField(default=list)  # Customtype Array of DeliveryPeriod
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))
