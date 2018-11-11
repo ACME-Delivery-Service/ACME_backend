@@ -21,26 +21,29 @@ class AcmeOrderStatusSerializer(serializers.ModelSerializer):
         model = AcmeOrderStatus
         fields = '__all__'
 
+
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = '__all__'
 
+
 class AcmeOrderSerializer(serializers.ModelSerializer):
     customer = AcmeCustomerSerializer()
     start_location = LocationSerializer()
     end_location = LocationSerializer()
+
     class Meta:
         model = AcmeOrder
         fields = '__all__'
 
 
 class AcmeUserSerializer(serializers.ModelSerializer):
-    contact = ContactSerializer()
+    contacts = ContactSerializer()
 
     class Meta:
         model = AcmeUser
-        fields = '__all__'
+        fields = ('id', 'avatar', 'contacts')
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -51,11 +54,31 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     operator = AcmeUserSerializer()
-    current_location = LocationSerializer()
+    location = LocationSerializer()
+    assigned_orders_count = serializers.SerializerMethodField('assigned_count')
+    in_progress_orders_count = serializers.SerializerMethodField('in_progress_count')
+
+    def in_progress_count(self, obj: DeliveryOperator):
+        orders = OrderDelivery.objects.all()
+        count = 0
+
+        for order in orders:
+            if obj.id == order.delivery_operator_id and order.delivery_status == 'in_progress':
+                count += 1
+        return count
+
+    def assigned_count(self, obj: DeliveryOperator):
+        orders = OrderDelivery.objects.all()
+        count = 0
+
+        for order in orders:
+            if obj.id == order.delivery_operator_id:
+                count += 1
+        return count
 
     class Meta:
         model = DeliveryOperator
-        fields = '__all__'
+        fields = ('operator', 'assigned_orders_count', 'in_progress_orders_count', 'location')
 
 
 class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
@@ -63,6 +86,7 @@ class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
     delivery_operator = AcmeDeliveryOperatorSerializer()
     start_location = LocationSerializer()
     end_location = LocationSerializer()
+
     class Meta:
         model = OrderDelivery
         fields = '__all__'
