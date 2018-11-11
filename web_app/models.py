@@ -22,23 +22,15 @@ class AcmeCustomer(models.Model):
         return self.contact.id
 
 
-class Coordinates(models.Field):
-    x = models.FloatField()
-    y = models.FloatField()
-
-
 class Location(models.Model):
-    location_address = models.CharField(max_length=255)
-    lat_long = Coordinates()
+    address = models.CharField(max_length=255)
+    longitude = models.FloatField()
+    latitude = models.FloatField()
 
 
-class DeliveryPeriod(models.Field):
+'''class DeliveryPeriod(models.Field):
     start_time = models.DateTimeField(null=False)
-    end_time = models.DateTimeField(null=False)
-
-    def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 104
-        super().__init__(*args, **kwargs)
+    end_time = models.DateTimeField(null=False) '''
 
 
 class AcmeOrder(models.Model):
@@ -48,19 +40,21 @@ class AcmeOrder(models.Model):
     priority = models.IntegerField()
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_end_location")
-    scheduled_time = DeliveryPeriod()
+    scheduled_time_start_time = models.DateTimeField()  # Custom Type DeliveryPeriod
+    scheduled_time_end_time = models.DateTimeField()  # Custom Type DeliveryPeriod
 
     @property
+    def customer_id_fkey(self):
+        return self.customer.id
+
+    '''@property
     def acme_order_start_location_id(self):
         return self.start_location.id
 
     @property
     def acme_order_end_location_id(self):
-        return self.end_location.id
-
-    @property
-    def customer_id_fkey(self):
-        return self.customer.id
+        return self.end_location.id 
+    '''
 
 
 class ShapeTypes(Enum):
@@ -69,11 +63,15 @@ class ShapeTypes(Enum):
     LARGE_ENVELOPE = 'large_envelope'
     PARCEL = 'parcel'
 
+    @classmethod
+    def all(self):
+        return [ShapeTypes.POSTCARD, ShapeTypes.LETTER, ShapeTypes.LARGE_ENVELOPE, ShapeTypes.PARCEL]
+
 
 class Parcel(models.Model):
     weight = models.FloatField()
     dimension = ArrayField(models.FloatField(), size=3, null=True)
-    shape = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in ShapeTypes])
+    shape = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in ShapeTypes.all()])
     order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, null=True)
 
     @property
@@ -99,10 +97,15 @@ class OrderStatusType(Enum):
     STORED = 'stored'
     DELIVERED = 'delivered'
 
+    @classmethod
+    def all(self):
+        return [OrderStatusType.CREATED, OrderStatusType.APPROVED, OrderStatusType.EN_ROUTE,
+                OrderStatusType.STORED, OrderStatusType.DELIVERED]
+
 
 class AcmeOrderStatus(models.Model):
     created_on = models.DateTimeField()
-    status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in OrderStatusType])
+    status = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in OrderStatusType.all()])
     warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
     order = models.ForeignKey(AcmeOrder, on_delete=models.PROTECT)
 
@@ -118,11 +121,15 @@ class AcmeOrderStatus(models.Model):
         return self.order.id
 
 
-class AcmeLocations(Enum):
+class AcmeRegions(Enum):
     EU = 'EU'
     RU = 'RU'
     CH = 'CH'
     UK = 'UK'
+
+    @classmethod
+    def all(self):
+        return [AcmeRegions.EU, AcmeRegions.RU, AcmeRegions.CH, AcmeRegions.UK]
 
 
 class AcmeRoles(Enum):
@@ -132,14 +139,18 @@ class AcmeRoles(Enum):
     CS = 'CS'
     CD = 'CD'
 
+    @classmethod
+    def all(self):
+        return [AcmeRoles.CEO, AcmeRoles.DO, AcmeRoles.CO, AcmeRoles.CS, AcmeRoles.CD]
+
 
 class AcmeUser(models.Model):
     password = models.CharField(max_length=16)
-    user_location = models.CharField(max_length=5, choices=[(tag, tag.value) for tag in AcmeLocations])
+    region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
-    file_url = models.CharField(max_length=255)
+    avatar_url = models.CharField(max_length=255)
 
     @property
     def users_contact_id(self):
@@ -148,7 +159,7 @@ class AcmeUser(models.Model):
 
 class UserRole(models.Model):
     user = models.ForeignKey(AcmeUser, on_delete=models.DO_NOTHING)
-    role = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in AcmeRoles])
+    role = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in AcmeRoles.all()])
 
     @property
     def roles_users_id(self):
@@ -160,11 +171,15 @@ class DeliveryStatusTypes(Enum):
     IN_PROGRESS = 'in_progress'
     COMPLETED = 'completed'
 
+    @classmethod
+    def all(self):
+        return [DeliveryStatusTypes.PENDING, DeliveryStatusTypes.IN_PROGRESS, DeliveryStatusTypes.COMPLETED]
+
 
 class DeliveryOperator(models.Model):
     operator = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, null=True)
-    current_pos = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
-    pos_last_updated = models.DateTimeField(null=True)
+    current_location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
+    location_last_updated = models.DateTimeField(null=True)
 
     @property
     def users_id(self):
@@ -172,16 +187,17 @@ class DeliveryOperator(models.Model):
 
     @property
     def users_location_id(self):
-        return self.current_pos.id
+        return self.current_location.id
 
 
 class OrderDelivery(models.Model):
     order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE)
     delivery_operator = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
-    delivery_status = models.CharField(max_length=20, choices=[(tag, tag.value) for tag in DeliveryStatusTypes])
+    delivery_status = models.CharField(max_length=20,
+                                       choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField()
+    active_time_period = JSONField()  # Customtype Array of DeliveryPeriod
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))
