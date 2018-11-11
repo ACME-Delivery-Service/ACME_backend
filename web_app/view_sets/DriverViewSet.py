@@ -130,11 +130,11 @@ class DriverViewSet(viewsets.ViewSet):
         return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
 
     @action(detail=True, methods=['GET'], url_path='pending-orders', permission_classes=[IsAuthenticated])
-    def pending_orders(self, request):
+    def pending_orders(self, request, pk=None):
         return Response(self.extract_orders_list(1, 'pending', self.format_pagination(request)), status=HTTP_200_OK)
 
     @action(detail=True, methods=['GET'], url_path='current-orders', permission_classes=[IsAuthenticated])
-    def current_orders(self, request):
+    def current_orders(self, request, pk=None):
         return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
 
     @action(detail=True, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
@@ -156,19 +156,20 @@ class DriverViewSet(viewsets.ViewSet):
             }
         }, status=HTTP_200_OK)
 
-    @action(detail=False, methods=['POST', 'GET'], permission_classes=[IsAuthenticated])
-    def location(self, request):
-        if request.method == 'POST':
-            return Response(status=HTTP_200_OK)
-        else:
-            return Response({
-                'id': 123,
-                'location': {
-                    'latitude': 123.312,
-                    'longitude': 321.234,
-                },
-                'location_updated_at': '1970-01-01 10:10:10',
-            }, status=HTTP_200_OK)
+    @action(detail=False, methods=['POST'], url_path='location', permission_classes=[IsAuthenticated])
+    def get_location(self, request):
+        return Response(status=HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], url_path='location', permission_classes=[IsAuthenticated])
+    def set_location(self, request, pk=None):
+        return Response({
+            'id': 123,
+            'location': {
+                'latitude': 123.312,
+                'longitude': 321.234,
+            },
+            'location_updated_at': '1970-01-01 10:10:10',
+        }, status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
@@ -195,4 +196,3 @@ class DriverViewSet(viewsets.ViewSet):
         serializer = AcmeDeliveryOperatorSerializer(driver)
         return Response(serializer.data,
                         status=HTTP_200_OK)
-
