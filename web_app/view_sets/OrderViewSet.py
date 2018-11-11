@@ -3,8 +3,11 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from web_app.serializers import *
+
+from web_app.models import AcmeOrder, Location, AcmeOrderStatus, OrderDelivery
+import json
 
 
 class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
@@ -31,6 +34,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
+        '''
         if not pk:
             return Response({'msg': 'No ID provided'}, HTTP_400_BAD_REQUEST)
 
@@ -95,33 +99,56 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             'status': 'en_route',
             'delivery_status': 'pending'
         }, status=HTTP_200_OK)
+        '''
+        
+        try:
+            order = AcmeOrder.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Order is not found'}, HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def location(self, request):
-        return Response({
-            'id': 1,
-            'location': {
-                'latitude': 35664564.31,
-                'longitude': 67367546.3
-            }
-        }, status=HTTP_200_OK)
+        serializer = AcmeOrderSerializer(order)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
+    def get_location(self, order):
+        location = Location.objects.first()
+        status = AcmeOrderStatus.objects.filter(order_id=order.id).order_by('created_on').last()
+        if status.status == 'created' or status.status == 'approved':
+            location = order.start_location
+        elif status.status == 'en_route':
+            delivery = OrderDelivery.objects.filter(order=order.id, delivery_status='in_progress').first()
+            location = delivery.delivery_operator.current_location
+        elif status.status == 'stored':
+            warehouse = Warehouse.objects.get(pk=status.warehouse_id)
+            location = Location.objects.first()
+        elif status.status == 'delivered':
+            location = order.end_location
+        return location
+
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def location(self, request, pk=None):
+        try:
+            order = AcmeOrder.objects.get(pk=pk)
+            return Response(LocationSerializer(self.get_location(order)).data, status=HTTP_200_OK)
+        except Exception as e:
+            return Response({'msg': 'Order or its status were not found'}, HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
     def assign(self, request):
-        if request.method == 'GET':
-            return Response({
-                'id': 1,
-                'location': {
-                    'latitude': 35664564.31,
-                    'longitude': 67367546.3
-                }
-            }, status=HTTP_200_OK)
-
-        elif request.method == 'POST':
-            order_id = request.data.get("order_id")
-            deriver_id = request.data.get("deriver_id")
-
-            return Response(status=HTTP_200_OK)
+        try:
+            order_id = request.POST['order_id']
+            driver_id = request.POST['driver_id']
+            end_location_id = request.POST['end_location_id']
+            if OrderDelivery.objects.filter(order=order_id, delivery_status='in_progress').count() > 0:
+                return Response({'msg': 'Driver is already assigned and delivering this order'}, status=HTTP_400_BAD_REQUEST)
+            location = self.get_location(AcmeOrder.objects.get(pk=order_id))
+            delivery = OrderDelivery(order_id=order_id, delivery_operator_id=driver_id,
+                                     delivery_status='pending', start_location_id=location.id,
+                                     end_location_id=end_location_id, active_time_period='{[]}')
+            delivery.save()
+            return Response(AcmeOrderDeliverySerializer(delivery).data, status=HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'msg': str(e)}, status=HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):

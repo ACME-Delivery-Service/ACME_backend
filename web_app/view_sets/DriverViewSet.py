@@ -2,7 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from web_app.serializers import *
+import json
+from django.http import HttpResponse, JsonResponse
 
 
 class DriverViewSet(viewsets.ViewSet):
@@ -134,8 +137,16 @@ class DriverViewSet(viewsets.ViewSet):
     def current_orders(self, request):
         return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
-    def co_contact(self, request):
+    @action(detail=True, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
+    def co_contact(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+        control_operator = AcmeUser.objects.get(pk=driver.users_id)
+        serializer = AcmeUserSerializer(control_operator)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
         return Response({
             'id': 1243,
             'contacts': {
@@ -161,40 +172,27 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        return Response({
-            'total_count': 1,
-            'results': [
-                {
-                    'id': 123,
-                    'avatar': 'http',
-                    'contacts': {
-                        'first_name': 'Johnathan',
-                        'last_name': 'Morrison',
-                        'phone_number': '+1123412341234'
-                    },
-                    'assigned_orders_count': 1,
-                    'in_progress_orders_count': 0,
-                    'location': {
-                        'latitude': 123.43,
-                        'longitude': 432.34
-                    }
-                }
-            ]
-        }, status=HTTP_200_OK)
+        # todo
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def info(self, request):
+        drivers = DeliveryOperator.objects.all()
+        drivers_serialized = []
+        for driver in drivers:
+            serializer = AcmeDeliveryOperatorSerializer(driver)
+            drivers_serialized.append(serializer.data)
         return Response({
-            'id': 123,
-            'avatar': 'http',
-            'contacts': {
-                'first_name': 'Johnathan',
-                'last_name': 'Morrison',
-                'phone_number': '+1123412341234'
-            },
-            'location': {
-                'latitude': 35664564.31,
-                'longitude': 67367546.3
-            },
-            'location_update_time': '1970-01-01 10:10:10',
-        }, status=HTTP_200_OK)
+            'total_count': len(drivers_serialized),
+            'results': drivers_serialized
+        },
+            status=HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def info(self, request, pk=None):
+        try:
+            driver = DeliveryOperator.objects.get(pk=pk)
+        except DeliveryOperator.DoesNotExist:
+            return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
+
+        serializer = AcmeDeliveryOperatorSerializer(driver)
+        return Response(serializer.data,
+                        status=HTTP_200_OK)
+
