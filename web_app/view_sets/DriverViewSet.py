@@ -152,7 +152,8 @@ class DriverViewSet(viewsets.ViewSet):
         if len(control_operators_in_region) == 0:
             return Response({'msg': ('No operators for this region(' + str(driver.operator.region) + ')')},
                             HTTP_400_BAD_REQUEST)
-        control_operator: UserRole = random.choice(control_operators_in_region)
+
+        control_operator = random.choice(control_operators_in_region)  # type: UserRole
         control_operator = control_operator.user
         serializer = AcmeUserSerializer(control_operator)
         return Response(serializer.data,

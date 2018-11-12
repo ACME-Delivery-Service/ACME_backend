@@ -3,7 +3,7 @@
 
 Debian specific:
 ```bash
-aptitude install python3 python3-setuptools
+aptitude install python3 python3-setuptools libpython3.5
 easy_install3 pip
 ```
 
@@ -75,4 +75,14 @@ mkdir /etc/uwsgi/vassals
 # link uwsgi service files in /etc/systemd/system/
 
 systemctl start emperor.uwsgi
+```
+
+## Problems
+```bash
+# bind(): No such file or directory [core/socket.c line 230]
+mkdir -p /var/run/uwsgi
+chmod -R 777 /var/run/uwsgi
+
+# /usr/local/bin/uwsgi: error while loading shared libraries: libpython3.5m.so.1.0: cannot open shared object file: No such file or directory
+ln -s /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 /usr/lib/x86_64-linux-gnu/libpython3.5m.so.1.0
 ```
