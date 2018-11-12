@@ -21,17 +21,10 @@ class AcmeOrderStatusSerializer(serializers.ModelSerializer):
         model = AcmeOrderStatus
         fields = '__all__'
 
+
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = '__all__'
-
-class AcmeOrderSerializer(serializers.ModelSerializer):
-    customer = AcmeCustomerSerializer()
-    start_location = LocationSerializer()
-    end_location = LocationSerializer()
-    class Meta:
-        model = AcmeOrder
         fields = '__all__'
 
 
@@ -43,19 +36,33 @@ class AcmeUserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LocationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Location
-        fields = '__all__'
-
-
 class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     operator = AcmeUserSerializer()
-    current_location = LocationSerializer()
+    # current_location = LocationSerializer()
 
     class Meta:
         model = DeliveryOperator
         fields = '__all__'
+
+
+class OrderDeliverySerializer(serializers.ModelSerializer):
+    delivery_operator = AcmeDeliveryOperatorSerializer()
+
+    class Meta:
+        model = OrderDelivery
+        fields = ['delivery_operator', ]
+
+
+class AcmeOrderSerializer(serializers.ModelSerializer):
+    start_location = LocationSerializer()
+    end_location = LocationSerializer()
+    order_deliveries = OrderDeliverySerializer(many=True)
+    order_status = AcmeOrderStatusSerializer()
+
+    class Meta:
+        model = AcmeOrder
+        fields = ['priority', 'start_location', 'end_location', 'scheduled_time_start_time',
+                  'scheduled_time_end_time', 'order_deliveries', 'order_status']
 
 
 class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
@@ -63,6 +70,7 @@ class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
     delivery_operator = AcmeDeliveryOperatorSerializer()
     start_location = LocationSerializer()
     end_location = LocationSerializer()
+
     class Meta:
         model = OrderDelivery
         fields = '__all__'

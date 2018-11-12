@@ -7,10 +7,9 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CR
 from web_app.serializers import *
 
 from web_app.models import AcmeOrder, Location, AcmeOrderStatus, OrderDelivery
-import json
 
 
-class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     permission_classes = [IsAuthenticated, ]
 
     def get_serializer_class(self):
@@ -100,7 +99,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             'delivery_status': 'pending'
         }, status=HTTP_200_OK)
         '''
-        
+
         try:
             order = AcmeOrder.objects.get(pk=pk)
         except DeliveryOperator.DoesNotExist:
@@ -140,7 +139,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             driver_id = request.POST['driver_id']
             end_location_id = request.POST['end_location_id']
             if OrderDelivery.objects.filter(order=order_id, delivery_status='in_progress').count() > 0:
-                return Response({'msg': 'Driver is already assigned and delivering this order'}, status=HTTP_400_BAD_REQUEST)
+                return Response({'msg': 'Driver is already assigned and delivering this order'},
+                                status=HTTP_400_BAD_REQUEST)
             location = self.get_location(AcmeOrder.objects.get(pk=order_id))
             delivery = OrderDelivery(order_id=order_id, delivery_operator_id=driver_id,
                                      delivery_status='pending', start_location_id=location.id,
@@ -151,40 +151,49 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             return Response({'msg': str(e)}, status=HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def list(self, request):
-        return Response({
-            'total_count': 123,
-            'results': [{
-                'id': 1,
-                'delivery_period': {
-                    'start': '2018-12-25 12:20:00',
-                    'end': '2018-01-25 10:10:00'
-                },
-                'priority': 123,
-                'address_to': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
-                    }
-                },
-                'address_from': {
-                    'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    'location': {
-                        'latitude': 12343526.31,
-                        'longitude': 42445698.3
-                    }
-                },
-                'status': 'en_route',
-                'is_assigned': True,
-                'delivery_operator': {
-                    'id': 123,
-                    'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
-                    'contacts': {
-                        'first_name': 'Johnathan',
-                        'last_name': 'Morrison',
-                        'phone_number': '8(800)555-35-35',
-                    }
-                },
-            }]
-        }, status=HTTP_200_OK)
+    def list(self, request, pk=None):
+
+        objects = AcmeOrder.objects.all()
+        serialized_array = []
+        for obj in objects:
+            serializer = AcmeOrderSerializer(obj)
+            serialized_array.append(serializer.data)
+        print(serialized_array)
+        return Response({'result': serialized_array}, status=HTTP_200_OK)
+
+        # return Response({
+        #     'total_count': 123,
+        #     'results': [{
+                #         'id': 1,
+                #         'delivery_period': {
+                #             'start': '2018-12-25 12:20:00',
+                #             'end': '2018-01-25 10:10:00'
+                    #         },
+                    #         'priority': 123,
+                    #         'address_to': {
+                    #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    #             'location': {
+                    #                 'latitude': 35664564.31,
+                    #                 'longitude': 67367546.3
+                    #             }
+                    #         },
+                    #         'address_from': {
+                    #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
+                    #             'location': {
+                    #                 'latitude': 12343526.31,
+                    #                 'longitude': 42445698.3
+                    #             }
+        #                       },
+        #         'status': 'en_route',
+        #         'is_assigned': True,
+                        #         'delivery_operator': {
+                        #             'id': 123,
+                        #             'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
+                        #             'contacts': {
+                        #                 'first_name': 'Johnathan',
+                        #                 'last_name': 'Morrison',
+                        #                 'phone_number': '8(800)555-35-35',
+                        #             }
+                        #         },
+                        #     }]
+        # }, status=HTTP_200_OK)

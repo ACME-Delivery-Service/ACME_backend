@@ -107,7 +107,7 @@ class AcmeOrderStatus(models.Model):
     created_on = models.DateTimeField()
     status = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in OrderStatusType.all()])
     warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
-    order = models.ForeignKey(AcmeOrder, on_delete=models.PROTECT)
+    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, related_name="order_status")
 
     class Meta:
         unique_together = (('order', 'created_on'),)
@@ -191,8 +191,8 @@ class DeliveryOperator(models.Model):
 
 
 class OrderDelivery(models.Model):
-    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE)
-    delivery_operator = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
+    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, related_name="order_deliveries")
+    delivery_operator = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE, related_name="delivery_operator")
     delivery_status = models.CharField(max_length=20,
                                        choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
