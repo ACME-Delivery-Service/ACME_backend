@@ -82,8 +82,10 @@ class Parcel(models.Model):
 class Warehouse(models.Model):
     warehouse_name = models.CharField(max_length=255, null=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     max_capacity = models.FloatField()
     is_active = models.BooleanField(default=True)
+
 
     @property
     def warehouses_contact_id(self):
@@ -148,13 +150,13 @@ class AcmeUser(models.Model):
     password = models.CharField(max_length=16)
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
-    contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
+    contacts = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
-    avatar_url = models.CharField(max_length=255, null=True)
+    avatar = models.CharField(max_length=255, null=True)
 
     @property
     def users_contact_id(self):
-        return self.contact.id
+        return self.contacts.id
 
 
 class UserRole(models.Model):
@@ -178,7 +180,7 @@ class DeliveryStatusTypes(Enum):
 
 class DeliveryOperator(models.Model):
     operator = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, null=True)
-    current_location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     location_last_updated = models.DateTimeField(null=True)
 
     @property
@@ -197,7 +199,7 @@ class OrderDelivery(models.Model):
                                        choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField(default=list) # Customtype Array of DeliveryPeriod
+    active_time_period = JSONField(default=list)  # Customtype Array of DeliveryPeriod
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))

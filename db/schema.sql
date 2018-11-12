@@ -86,6 +86,7 @@ CREATE TABLE warehouses (
     warehouse_id   SERIAL  PRIMARY KEY,
     warehouse_name VARCHAR(255),
     contact_id     INTEGER NOT NULL,
+    location       INTEGER,
     /** Area of warehouse m^2
      */
     max_capacity   REAL    NOT NULL,
@@ -97,6 +98,10 @@ CREATE TABLE warehouses (
     CONSTRAINT warehouses_contact_id
         FOREIGN KEY (contact_id)
         REFERENCES contacts (contact_id)
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT location_id_fkey
+        FOREIGN KEY (location)
+        REFERENCES locations(location_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
@@ -125,6 +130,7 @@ CREATE TABLE acme_order_status (
         FOREIGN KEY (warehouse_id)
         REFERENCES warehouses (warehouse_id)
         ON UPDATE NO ACTION ON DELETE NO ACTION
+
 );
 
 CREATE TYPE acme_region AS ENUM (
