@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from .models import *
 import json
 
@@ -91,6 +90,7 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
     def get_description(self, obj):
         return obj.comment
 
+
     class Meta:
         model = AcmeOrder
         fields = ('id', 'delivery_period', 'priority', 'address_from', 'address_to', 'description', 'parcels_info',
@@ -104,8 +104,8 @@ class AcmeUserSerializer(serializers.ModelSerializer):
         model = AcmeUser
         fields = ('id', 'avatar', 'contacts')
 
-class UserRoleSerializer(serializers.ModelSerializer):
 
+class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = '__all__'
@@ -116,7 +116,6 @@ class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     assigned_orders_count = serializers.SerializerMethodField('assigned_count')
     in_progress_orders_count = serializers.SerializerMethodField('in_progress_count')
-
 
     def user_info(self, obj: DeliveryOperator):
         for user in AcmeUser.objects.all():
