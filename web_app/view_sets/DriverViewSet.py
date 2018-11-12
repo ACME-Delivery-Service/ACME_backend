@@ -176,9 +176,33 @@ class DriverViewSet(viewsets.ViewSet):
 
         drivers = DeliveryOperator.objects.all()
         drivers_serialized = []
+        drivers_count = 0
         for driver in drivers:
+            drivers_count += 1
             serializer = AcmeDeliveryOperatorSerializer(driver)
-            drivers_serialized.append(serializer.data)
+            temp_result = json.dumps(serializer.data['operator'])
+            temp_result = temp_result[:-1]
+            temp_result += ','
+            temp_location = json.dumps({'location': serializer.data['location']})
+            temp_location = temp_location[1:-1]
+            temp_result += temp_location + ','
+
+            temp_assigned_count = json.dumps({'assigned_orders_count': serializer.data['assigned_orders_count']})
+            temp_assigned_count = temp_assigned_count[1:-1]
+            temp_result += temp_assigned_count + ','
+
+            temp_in_progress_count = json.dumps({'in_progress_orders_count': serializer.data['in_progress_orders_count']})
+            temp_in_progress_count = temp_in_progress_count[1:-1]
+            temp_result += temp_in_progress_count
+            temp_result += '}'
+
+            print(temp_result)
+            temp_result = json.loads(temp_result)
+
+            drivers_serialized.append(temp_result)
+        #    drivers_serialized.append(temp_result)
+
+        print(drivers_serialized)
         return Response({
             'total_count': len(drivers_serialized),
             'results': drivers_serialized
@@ -195,4 +219,3 @@ class DriverViewSet(viewsets.ViewSet):
         serializer = AcmeDeliveryOperatorSerializer(driver)
         return Response(serializer.data,
                         status=HTTP_200_OK)
-

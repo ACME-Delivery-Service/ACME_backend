@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+import json
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -52,11 +53,20 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class DeliveryOperatorListSerializer(serializers.ListSerializer):
+
+
 class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
     operator = AcmeUserSerializer()
     location = LocationSerializer()
     assigned_orders_count = serializers.SerializerMethodField('assigned_count')
     in_progress_orders_count = serializers.SerializerMethodField('in_progress_count')
+
+
+    def user_info(self, obj: DeliveryOperator):
+        for user in AcmeUser.objects.all():
+            if user.id == obj.operator.id:
+                return AcmeUserSerializer(user).data
 
     def in_progress_count(self, obj: DeliveryOperator):
         orders = OrderDelivery.objects.all()
