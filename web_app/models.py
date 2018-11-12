@@ -82,8 +82,10 @@ class Parcel(models.Model):
 class Warehouse(models.Model):
     warehouse_name = models.CharField(max_length=255, null=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     max_capacity = models.FloatField()
     is_active = models.BooleanField(default=True)
+
 
     @property
     def warehouses_contact_id(self):
