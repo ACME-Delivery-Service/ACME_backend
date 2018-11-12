@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from web_app.serializers import *
 import json
+import random
 from django.http import HttpResponse, JsonResponse
 
 
@@ -143,7 +144,16 @@ class DriverViewSet(viewsets.ViewSet):
             driver = DeliveryOperator.objects.get(pk=pk)
         except DeliveryOperator.DoesNotExist:
             return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
-        control_operator = AcmeUser.objects.get(pk=driver.users_id)
+        control_operators = UserRole.objects.filter(role=AcmeRoles.CO.value)
+        control_operators_in_region = []
+        for operator in control_operators:
+            if operator.user.region == driver.operator.region:
+                control_operators_in_region.append(operator)
+        if len(control_operators_in_region) == 0:
+            return Response({'msg': ('No operators for this region(' + str(driver.operator.region) + ')')},
+                            HTTP_400_BAD_REQUEST)
+        control_operator: UserRole = random.choice(control_operators_in_region)
+        control_operator = control_operator.user
         serializer = AcmeUserSerializer(control_operator)
         return Response(serializer.data,
                         status=HTTP_200_OK)
@@ -173,20 +183,41 @@ class DriverViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
-        # todo
 
         drivers = DeliveryOperator.objects.all()
         drivers_serialized = []
+
         for driver in drivers:
             serializer = AcmeDeliveryOperatorSerializer(driver)
-            drivers_serialized.append(serializer.data)
+            temp_result = json.dumps(serializer.data['operator'])
+            temp_result = temp_result[:-1]
+            temp_result += ','
+            temp_location = json.dumps({'location': serializer.data['location']})
+            temp_location = temp_location[1:-1]
+            temp_result += temp_location + ','
+
+            temp_assigned_count = json.dumps({'assigned_orders_count': serializer.data['assigned_orders_count']})
+            temp_assigned_count = temp_assigned_count[1:-1]
+            temp_result += temp_assigned_count + ','
+
+            temp_in_progress_count = json.dumps(
+                {'in_progress_orders_count': serializer.data['in_progress_orders_count']})
+            temp_in_progress_count = temp_in_progress_count[1:-1]
+            temp_result += temp_in_progress_count
+            temp_result += '}'
+
+            temp_result = json.loads(temp_result)
+
+            drivers_serialized.append(temp_result)
+
         return Response({
             'total_count': len(drivers_serialized),
             'results': drivers_serialized
         },
             status=HTTP_200_OK)
 
-    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['GET'],
+            permission_classes=[IsAuthenticated])  # todo Change permission Class to  IsControlOperator
     def info(self, request, pk=None):
         try:
             driver = DeliveryOperator.objects.get(pk=pk)
@@ -194,5 +225,22 @@ class DriverViewSet(viewsets.ViewSet):
             return Response({'msg': 'Driver is not found'}, HTTP_400_BAD_REQUEST)
 
         serializer = AcmeDeliveryOperatorSerializer(driver)
-        return Response(serializer.data,
+        temp_result = json.dumps(serializer.data['operator'])
+        temp_result = temp_result[:-1]
+        temp_result += ','
+        temp_location = json.dumps({'location': serializer.data['location']})
+        temp_location = temp_location[1:-1]
+        temp_result += temp_location + ','
+
+        temp_assigned_count = json.dumps({'assigned_orders_count': serializer.data['assigned_orders_count']})
+        temp_assigned_count = temp_assigned_count[1:-1]
+        temp_result += temp_assigned_count + ','
+
+        temp_in_progress_count = json.dumps(
+            {'in_progress_orders_count': serializer.data['in_progress_orders_count']})
+        temp_in_progress_count = temp_in_progress_count[1:-1]
+        temp_result += temp_in_progress_count
+        temp_result += '}'
+        temp_result = json.loads(temp_result)
+        return Response(temp_result,
                         status=HTTP_200_OK)
