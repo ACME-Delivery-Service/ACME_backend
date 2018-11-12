@@ -25,7 +25,6 @@ class AcmeOrderStatusSerializer(serializers.ModelSerializer):
         model = AcmeOrderStatus
         fields = '__all__'
 
-
 class LocationSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
 
@@ -34,10 +33,10 @@ class LocationSerializer(serializers.ModelSerializer):
             'latitude': loc.latitude,
             'longitude': loc.longitude,
         }
+
     class Meta:
         model = Location
         fields = ('address', 'location')
-
 
 class AcmeOrderSerializer(serializers.ModelSerializer):
     customer_info = serializers.SerializerMethodField()
@@ -100,12 +99,6 @@ class AcmeUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AcmeUser
-        fields = '__all__'
-
-
-class LocationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Location
         fields = '__all__'
 
 
