@@ -7,11 +7,11 @@ from enum import Enum
 class Contact(models.Model):
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
-    additional_info = models.TextField()
+    additional_info = models.TextField(null=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    position = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
+    position = models.CharField(max_length=255, null=True)
+    company = models.CharField(max_length=255, null=True)
 
 
 class AcmeCustomer(models.Model):
@@ -35,7 +35,7 @@ class Location(models.Model):
 
 class AcmeOrder(models.Model):
     created_on = models.DateTimeField()
-    comment = models.TextField()
+    comment = models.TextField(null=True)
     customer = models.ForeignKey(AcmeCustomer, on_delete=models.PROTECT)
     priority = models.IntegerField()
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="acme_order_start_location")
@@ -82,8 +82,10 @@ class Parcel(models.Model):
 class Warehouse(models.Model):
     warehouse_name = models.CharField(max_length=255, null=True)
     contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     max_capacity = models.FloatField()
     is_active = models.BooleanField(default=True)
+
 
     @property
     def warehouses_contact_id(self):
@@ -148,13 +150,13 @@ class AcmeUser(models.Model):
     password = models.CharField(max_length=16)
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
-    contact = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
+    contacts = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
-    avatar_url = models.CharField(max_length=255)
+    avatar = models.CharField(max_length=255, null=True)
 
     @property
     def users_contact_id(self):
-        return self.contact.id
+        return self.contacts.id
 
 
 class UserRole(models.Model):
@@ -178,7 +180,7 @@ class DeliveryStatusTypes(Enum):
 
 class DeliveryOperator(models.Model):
     operator = models.ForeignKey(AcmeUser, on_delete=models.PROTECT, null=True)
-    current_location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     location_last_updated = models.DateTimeField(null=True)
 
     @property
@@ -197,7 +199,7 @@ class OrderDelivery(models.Model):
                                        choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")
     end_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_end_location")
-    active_time_period = JSONField()  # Customtype Array of DeliveryPeriod
+    active_time_period = JSONField(default=list)  # Customtype Array of DeliveryPeriod
 
     class Meta:
         unique_together = (('order', 'delivery_operator'))
