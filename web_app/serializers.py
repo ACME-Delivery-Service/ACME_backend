@@ -46,6 +46,13 @@ class AcmeUserSerializer(serializers.ModelSerializer):
         model = AcmeUser
         fields = ('id', 'avatar', 'contacts')
 
+class UserRoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserRole
+        fields = '__all__'
+
+
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
