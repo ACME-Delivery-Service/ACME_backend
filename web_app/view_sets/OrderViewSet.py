@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from web_app.serializers import *
+from django.db.models import Q
 
 from web_app.models import AcmeOrder, Location, AcmeOrderStatus, OrderDelivery
 import json
@@ -119,8 +120,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
             delivery = OrderDelivery.objects.filter(order=order.id, delivery_status='in_progress').first()
             location = delivery.delivery_operator.current_location
         elif status.status == 'stored':
-            warehouse = Warehouse.objects.get(pk=status.warehouse_id)
-            location = Location.objects.first()
+            warehouse = status.warehouse
+            location = warehouse.location
         elif status.status == 'delivered':
             location = order.end_location
         return location
@@ -133,20 +134,28 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
         except Exception as e:
             return Response({'msg': 'Order or its status were not found'}, HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
-    def assign(self, request):
+    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+    def assign(self, request, pk=None):
         try:
-            order_id = request.POST['order_id']
+            order_id = pk
             driver_id = request.POST['driver_id']
+            try:
+                order = AcmeOrder.objects.get(pk=order_id)
+            except DeliveryOperator.DoesNotExist:
+                return Response({'msg': 'Order not found'}, HTTP_400_BAD_REQUEST)
+            try:
+                driver = DeliveryOperator.objects.get(pk=driver_id)
+            except DeliveryOperator.DoesNotExist:
+                return Response({'msg': 'Delivery operator not found'}, HTTP_400_BAD_REQUEST)
             end_location_id = request.POST['end_location_id']
-            if OrderDelivery.objects.filter(order=order_id, delivery_status='in_progress').count() > 0:
+            if OrderDelivery.objects.filter(Q(delivery_status='in_progress') | Q(delivery_status='pending'), order=order_id).count() > 0:
                 return Response({'msg': 'Driver is already assigned and delivering this order'}, status=HTTP_400_BAD_REQUEST)
             location = self.get_location(AcmeOrder.objects.get(pk=order_id))
             delivery = OrderDelivery(order_id=order_id, delivery_operator_id=driver_id,
                                      delivery_status='pending', start_location_id=location.id,
-                                     end_location_id=end_location_id, active_time_period='{[]}')
+                                     end_location_id=end_location_id, active_time_period=list())
             delivery.save()
-            return Response(AcmeOrderDeliverySerializer(delivery).data, status=HTTP_201_CREATED)
+            return Response(AcmeOrderDeliverySerializer(delivery).data, status=HTTP_200_OK)
         except Exception as e:
             return Response({'msg': str(e)}, status=HTTP_400_BAD_REQUEST)
 
