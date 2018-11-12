@@ -14,22 +14,40 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
     def get_serializer_class(self):
         if self.action == 'status':
-            return AcmeOrderStatusSerializer()
-        return AcmeOrderSerializer()
+            return AcmeOrderStatusSerializer
+        elif self.action == 'delivery_status':
+            return OrderDeliveryCreateSerializer
+        return AcmeOrderSerializer
 
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def status(self, request, pk=None):
         if request.method == 'GET':
-            status = get_object_or_404(AcmeOrderStatus.objects.all(), order_id__id=pk)
-
-            return Response(self.get_serializer(status), status=HTTP_200_OK)
+            try:
+                status = AcmeOrderStatus.objects.filter(order__id=pk).order_by('-created_on')[0]
+                return Response(status.status, status=HTTP_200_OK)
+            except:
+                return Response('', status=HTTP_200_OK)
 
         elif request.method == 'POST':
-            serializer = AcmeOrderStatusSerializer(data=request.data)
+            serializer = AcmeOrderStatusCreateSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(order_id=pk)
                 return Response(serializer.data, status=HTTP_200_OK)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+    def delivery_status(self, request, pk=None):
+        try:
+            order_delivery = OrderDelivery.objects.filter(order__id=pk).order_by('-id')[0]
+
+            serializer = self.get_serializer(order_delivery, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            return Response(serializer.data, status=HTTP_200_OK)
+
+        except:
+            return Response('', status=HTTP_200_OK)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
@@ -159,41 +177,41 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             serializer = AcmeOrderSerializer(obj)
             serialized_array.append(serializer.data)
         print(serialized_array)
-        return Response({'result': serialized_array}, status=HTTP_200_OK)
+        return Response({'result': serialized_array[-1]}, status=HTTP_200_OK)
 
         # return Response({
         #     'total_count': 123,
         #     'results': [{
-                #         'id': 1,
-                #         'delivery_period': {
-                #             'start': '2018-12-25 12:20:00',
-                #             'end': '2018-01-25 10:10:00'
-                    #         },
-                    #         'priority': 123,
-                    #         'address_to': {
-                    #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    #             'location': {
-                    #                 'latitude': 35664564.31,
-                    #                 'longitude': 67367546.3
-                    #             }
-                    #         },
-                    #         'address_from': {
-                    #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                    #             'location': {
-                    #                 'latitude': 12343526.31,
-                    #                 'longitude': 42445698.3
-                    #             }
+        #         'id': 1,
+        #         'delivery_period': {
+        #             'start': '2018-12-25 12:20:00',
+        #             'end': '2018-01-25 10:10:00'
+        #         },
+        #         'priority': 123,
+        #         'address_to': {
+        #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
+        #             'location': {
+        #                 'latitude': 35664564.31,
+        #                 'longitude': 67367546.3
+        #             }
+        #         },
+        #         'address_from': {
+        #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
+        #             'location': {
+        #                 'latitude': 12343526.31,
+        #                 'longitude': 42445698.3
+        #             }
         #                       },
         #         'status': 'en_route',
         #         'is_assigned': True,
-                        #         'delivery_operator': {
-                        #             'id': 123,
-                        #             'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
-                        #             'contacts': {
-                        #                 'first_name': 'Johnathan',
-                        #                 'last_name': 'Morrison',
-                        #                 'phone_number': '8(800)555-35-35',
-                        #             }
-                        #         },
-                        #     }]
+        #         'delivery_operator': {
+        #             'id': 123,
+        #             'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
+        #             'contacts': {
+        #                 'first_name': 'Johnathan',
+        #                 'last_name': 'Morrison',
+        #                 'phone_number': '8(800)555-35-35',
+        #             }
+        #         },
+        #     }]
         # }, status=HTTP_200_OK)

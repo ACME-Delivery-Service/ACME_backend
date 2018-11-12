@@ -104,9 +104,9 @@ class OrderStatusType(Enum):
 
 
 class AcmeOrderStatus(models.Model):
-    created_on = models.DateTimeField()
+    created_on = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in OrderStatusType.all()])
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING, null=True, blank=True)
     order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, related_name="order_status")
 
     class Meta:
