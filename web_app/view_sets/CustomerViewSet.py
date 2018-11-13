@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
-from web_app.serializers import *
+from web_app.serializers_egor import *
 
 
 class CustomerViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):

@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
-from web_app.serializers import *
+from web_app.serializers_egor import *
 from django.db.models import Q
 
 from web_app.models import AcmeOrder, Location, AcmeOrderStatus, OrderDelivery
