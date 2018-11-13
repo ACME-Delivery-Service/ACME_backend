@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from web_app.serializers_egor import *
+from web_app.serializers_default import *
 import json
 import random
 from django.http import HttpResponse, JsonResponse
