@@ -1,9 +1,11 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+
+from web_app.exceptions import AcmeAPIException
+from web_app.serializers_baba import *
 from web_app.serializers_default import *
 from django.db.models import Q
 
@@ -26,8 +28,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             try:
                 status = AcmeOrderStatus.objects.filter(order__id=pk).order_by('-created_on')[0]
                 return Response(status.status, status=HTTP_200_OK)
-            except:
-                return Response('', status=HTTP_200_OK)
+            except AcmeOrderStatus.DoesNotExist:
+                raise AcmeAPIException('Order not found')
 
         elif request.method == 'POST':
             serializer = AcmeOrderStatusCreateSerializer2(data=request.data)
@@ -122,11 +124,10 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         try:
             order = AcmeOrder.objects.get(pk=pk)
         except DeliveryOperator.DoesNotExist:
-            return Response({'msg': 'Order is not found'}, HTTP_400_BAD_REQUEST)
+            raise AcmeAPIException('Order not found')
 
-        serializer = AcmeOrderSerializer2(order)
-        return Response(serializer.data,
-                        status=HTTP_200_OK)
+        serializer = AcmeOrderSerializer(order)
+        return Response(serializer.data, status=HTTP_200_OK)
 
     def get_location(self, order):
         location = Location.objects.first()
@@ -147,7 +148,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     def location(self, request, pk=None):
         try:
             order = AcmeOrder.objects.get(pk=pk)
-            return Response(LocationSerializer2(self.get_location(order)).data, status=HTTP_200_OK)
+            return Response(LocationSerializer(self.get_location(order)).data, status=HTTP_200_OK)
         except Exception as e:
             return Response({'msg': 'Order or its status were not found'}, HTTP_400_BAD_REQUEST)
 
@@ -165,8 +166,10 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             except DeliveryOperator.DoesNotExist:
                 return Response({'msg': 'Delivery operator not found'}, HTTP_400_BAD_REQUEST)
             end_location_id = request.POST['end_location_id']
-            if OrderDelivery.objects.filter(Q(delivery_status='in_progress') | Q(delivery_status='pending'), order=order_id).count() > 0:
-                return Response({'msg': 'Driver is already assigned and delivering this order'}, status=HTTP_400_BAD_REQUEST)
+            if OrderDelivery.objects.filter(Q(delivery_status='in_progress') | Q(delivery_status='pending'),
+                                            order=order_id).count() > 0:
+                return Response({'msg': 'Driver is already assigned and delivering this order'},
+                                status=HTTP_400_BAD_REQUEST)
             location = self.get_location(AcmeOrder.objects.get(pk=order_id))
             delivery = OrderDelivery(order_id=order_id, delivery_operator_id=driver_id,
                                      delivery_status='pending', start_location_id=location.id,
@@ -184,5 +187,8 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         for obj in objects:
             serializer = AcmeOrderSerializer2(obj)
             serialized_array.append(serializer.data)
-        print(serialized_array)
-        return Response({'result': serialized_array[-1]}, status=HTTP_200_OK)
+
+        return Response({
+            'total_count': len(serialized_array),
+            'result': serialized_array[-1]
+        }, status=HTTP_200_OK)
