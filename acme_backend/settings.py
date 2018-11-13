@@ -22,10 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'm0v9k9i@26qzqrrdtd)9tcv4k4d^ec3ctw_(#c7)(50p$&kwk!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Should we require app key on login
-REQUIRE_APP_KEY = True
+REQUIRE_APP_KEY = False
 
 # At what domain should emails be for all users
 EMAIL_DOMAIN = 'innopolis.ru'
