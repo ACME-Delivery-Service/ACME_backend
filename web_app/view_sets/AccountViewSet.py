@@ -1,48 +1,54 @@
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
+from rest_framework.compat import authenticate
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.status import HTTP_200_OK
 
 from web_app.exceptions import AcmeAPIException
 from web_app.models import AcmeUser
 from web_app.permissions import IsAuthenticatedOrMeta
+from web_app.serializers import ContactSerializer
 
 
 class AccountViewSet(viewsets.ViewSet):
 
-    # @csrf_exempt
     @action(detail=False, methods=['POST'], permission_classes=[AllowAny])
     def login(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        app_key = request.data.get("app_key")
+
         if not email or not password:
             raise AcmeAPIException('Please provide both email and password')
-        if email != 'j.doe@innopolis.ru' or password != '12345678':
+        if settings.REQUIRE_APP_KEY and not app_key:
+            raise AcmeAPIException('Please provide app key')
+
+        user = authenticate(request, email=email, password=password, app_key=app_key)
+        if not user:
             raise AcmeAPIException('Invalid login credentials')
 
-        token, _ = Token.objects.get_or_create(user_id=1)
+        token, _ = Token.objects.get_or_create(user_id=user.id)
         return Response({'token': token.key}, status=HTTP_200_OK)
 
     @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticatedOrMeta])
     def logout(self, request):
+        token = Token.objects.get(user_id=request.user.id)
+        token.delete(None, True)
+
         return Response(status=HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticatedOrMeta])
     def info(self, request):
+        user = request.user  # type: AcmeUser
+        contacts = ContactSerializer(user.contacts)
+
         return Response({
-            'id': 1,
-            'email': 'j.doe@innopolis.ru',
-            'location': 'RU',
-            'avatar_url': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
-            'contacts': {
-                'address': 'Unsupported yet',
-                'phone_number': '8(800)555-35-35',
-                'additional_info': 'Unsupported yet',
-                'first_name': 'Evgeny',
-                'last_name': 'Baticov',
-                'position': 'Driver helper',
-                'company': 'Unsupported yet',
-            }
+            'id': user.id,
+            'email': user.email,
+            'location': user.region,
+            'avatar_url': user.get_avatar(),
+            'contacts': contacts.data
         }, status=HTTP_200_OK)
