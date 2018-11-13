@@ -177,6 +177,9 @@ class AcmeUser(AbstractBaseUser):
     def get_short_name(self):
         return self.email
 
+    def is_staff(self):
+        return True
+
     def get_by_natural_key(self, email):
         return self.get(**{self.model.USERNAME_FIELD: email})
 
