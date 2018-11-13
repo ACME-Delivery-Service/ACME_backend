@@ -158,6 +158,9 @@ class AcmeUser(AbstractBaseUser):
 
     objects = UserManager()
 
+    is_staff = True
+    is_active = True
+
     @property
     def users_contact_id(self):
         return self.contacts.id
@@ -176,9 +179,6 @@ class AcmeUser(AbstractBaseUser):
 
     def get_short_name(self):
         return self.email
-
-    def is_staff(self):
-        return True
 
     def get_by_natural_key(self, email):
         return self.get(**{self.model.USERNAME_FIELD: email})
@@ -214,7 +214,7 @@ class DeliveryOperator(models.Model):
 
     @property
     def users_location_id(self):
-        return self.current_location.id
+        return self.location.id
 
 
 class OrderDelivery(models.Model):
