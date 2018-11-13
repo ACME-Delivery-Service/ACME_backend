@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields import JSONField
@@ -148,7 +149,7 @@ class AcmeRoles(Enum):
         return [AcmeRoles.CEO, AcmeRoles.DO, AcmeRoles.CO, AcmeRoles.CS, AcmeRoles.CD]
 
 
-class AcmeUser(AbstractBaseUser):
+class AcmeUser(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
@@ -156,18 +157,21 @@ class AcmeUser(AbstractBaseUser):
     token = models.CharField(max_length=255, unique=True)
     avatar = models.CharField(max_length=255, null=True)
 
+    is_staff = True
+
     objects = UserManager()
 
-    is_staff = True
-    is_active = True
+    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['region', 'contacts_id']
 
     @property
     def users_contact_id(self):
         return self.contacts.id
 
-    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['region', 'contacts_id']
+    @property
+    def is_superuser(self):
+        return self.get_role() == AcmeRoles.CEO.value
 
     def get_avatar(self):
         if self.avatar:
@@ -175,13 +179,21 @@ class AcmeUser(AbstractBaseUser):
         return self.DEFAULT_AVATAR
 
     def get_full_name(self):
-        return self.contacts.first_name + ' ' + self.contacts.last_name
+        return self.get_short_name() + ' (' + self.email + ')'
 
     def get_short_name(self):
-        return self.email
+        return self.contacts.first_name + ' ' + self.contacts.last_name
 
-    def get_by_natural_key(self, email):
-        return self.get(**{self.model.USERNAME_FIELD: email})
+    def get_role(self):
+        try:
+            role_obj = UserRole.objects.get(pk=self.id)
+        except UserRole.DoesNotExist:
+            pass
+        else:
+            return role_obj.role
+
+    def get_by_natural_key(self, username):
+        return self.get(**{self.model.USERNAME_FIELD: username})
 
 
 class UserRole(models.Model):
