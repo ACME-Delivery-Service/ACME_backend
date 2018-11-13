@@ -1,7 +1,10 @@
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields import JSONField
 from enum import Enum
+
+from web_app.managers import UserManager
 
 
 class Contact(models.Model):
@@ -86,7 +89,6 @@ class Warehouse(models.Model):
     max_capacity = models.FloatField()
     is_active = models.BooleanField(default=True)
 
-
     @property
     def warehouses_contact_id(self):
         return self.contact.id
@@ -146,17 +148,37 @@ class AcmeRoles(Enum):
         return [AcmeRoles.CEO, AcmeRoles.DO, AcmeRoles.CO, AcmeRoles.CS, AcmeRoles.CD]
 
 
-class AcmeUser(models.Model):
-    password = models.CharField(max_length=16)
+class AcmeUser(AbstractBaseUser):
+    password = models.CharField(max_length=128)
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
     contacts = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=255, unique=True)
     avatar = models.CharField(max_length=255, null=True)
 
+    objects = UserManager()
+
     @property
     def users_contact_id(self):
         return self.contacts.id
+
+    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['region', 'contacts_id']
+
+    def get_avatar(self):
+        if self.avatar:
+            return self.avatar
+        return self.DEFAULT_AVATAR
+
+    def get_full_name(self):
+        return self.contacts.first_name + ' ' + self.contacts.last_name
+
+    def get_short_name(self):
+        return self.email
+
+    def get_by_natural_key(self, email):
+        return self.get(**{self.model.USERNAME_FIELD: email})
 
 
 class UserRole(models.Model):

@@ -24,6 +24,18 @@ SECRET_KEY = 'm0v9k9i@26qzqrrdtd)9tcv4k4d^ec3ctw_(#c7)(50p$&kwk!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# Should we require app key on login
+REQUIRE_APP_KEY = True
+
+# At what domain should emails be for all users
+EMAIL_DOMAIN = 'innopolis.ru'
+
+# REQUIRED: security keys for app identification
+APP_KEYS = {
+    'mobile': 'SmjSf2FzB8Q5rxVb',
+    'web': 'yYbjxtEuhC74PEmR',
+}
+
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'backend.acme-company.site'
@@ -33,7 +45,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'django.contrib.auth',
+    'django.contrib.auth',  # actually we don't need it's tables, we only need it's CLI commands
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -96,6 +108,12 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'web_app.auth.AuthBackend'
+]
+
+AUTH_USER_MODEL = 'web_app.AcmeUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators

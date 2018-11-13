@@ -18,7 +18,7 @@ pip install psycopg2-binary
 ## Install
 
 Create DB user
-```sql
+```postgresql
 # su - postgres
 # psql
 
@@ -34,10 +34,10 @@ python3 manage.py check --deploy
 Runs DB setup
 ```bash
 python3 manage.py migrate
-python3 manage.py createsuperuser
+python3 manage.py createsuperuser --email=j.doe@innopolis.ru --region=RU --contacts_id=1
 python3 manage.py collectstatic
 ```
-> superuser: login=root password=acme_admin
+> superuser: email=j.doe@innopolis.ru password=12345678
 
 ## Start server
 ```bash
