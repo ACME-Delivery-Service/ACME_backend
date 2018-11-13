@@ -17,7 +17,7 @@ ROLE_APP = {
 
 
 class UserHelper:
-    _user = None
+    _user = None  # type: AcmeUser
 
     def __init__(self, user):
         self._user = user
@@ -30,12 +30,7 @@ class UserHelper:
         return make_password(password)
 
     def get_role(self):
-        try:
-            role_obj = UserRole.objects.get(pk=self._user.id)
-        except UserRole.DoesNotExist:
-            pass
-        else:
-            return role_obj.role
+        return self._user.get_role()
 
 
 class AuthBackend(ModelBackend):
@@ -43,7 +38,10 @@ class AuthBackend(ModelBackend):
     Authenticates user
     """
 
-    def authenticate(self, request, email=None, password=None, app_key=None, **kwargs):
+    def authenticate(self, request, email=None, username=None, password=None, app_key=None, **kwargs):
+        if email is None:
+            email = username
+
         try:
             user = AcmeUser.objects.get(email=email)
             helper = UserHelper(user)

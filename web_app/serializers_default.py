@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import *
-import json
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -89,7 +88,6 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
 
     def get_description(self, obj):
         return obj.comment
-
 
     class Meta:
         model = AcmeOrder

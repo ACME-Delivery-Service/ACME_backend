@@ -12,10 +12,8 @@ admin.site.register(Parcel)
 admin.site.register(Warehouse)
 admin.site.register(AcmeOrderStatus)
 
-
 admin.site.register(AcmeUser)
 admin.site.register(UserRole)
 
 admin.site.register(DeliveryOperator)
 admin.site.register(OrderDelivery)
-

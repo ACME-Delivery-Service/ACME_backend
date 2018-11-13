@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields import JSONField
@@ -108,10 +109,10 @@ class OrderStatusType(Enum):
 
 
 class AcmeOrderStatus(models.Model):
-    created_on = models.DateTimeField()
+    created_on = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[(tag.value, tag.name) for tag in OrderStatusType.all()])
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
-    order = models.ForeignKey(AcmeOrder, on_delete=models.PROTECT)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING, null=True, blank=True)
+    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, related_name="order_status")
 
     class Meta:
         unique_together = (('order', 'created_on'),)
@@ -148,7 +149,7 @@ class AcmeRoles(Enum):
         return [AcmeRoles.CEO, AcmeRoles.DO, AcmeRoles.CO, AcmeRoles.CS, AcmeRoles.CD]
 
 
-class AcmeUser(AbstractBaseUser):
+class AcmeUser(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
@@ -156,15 +157,24 @@ class AcmeUser(AbstractBaseUser):
     token = models.CharField(max_length=255, unique=True)
     avatar = models.CharField(max_length=255, null=True)
 
+    groups = None
+    user_permissions = None
+
+    is_staff = True
+
     objects = UserManager()
+
+    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['region', 'contacts_id']
 
     @property
     def users_contact_id(self):
         return self.contacts.id
 
-    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['region', 'contacts_id']
+    @property
+    def is_superuser(self):
+        return self.get_role() == AcmeRoles.CEO.value
 
     def get_avatar(self):
         if self.avatar:
@@ -172,13 +182,21 @@ class AcmeUser(AbstractBaseUser):
         return self.DEFAULT_AVATAR
 
     def get_full_name(self):
-        return self.contacts.first_name + ' ' + self.contacts.last_name
+        return self.get_short_name() + ' (' + self.email + ')'
 
     def get_short_name(self):
-        return self.email
+        return self.contacts.first_name + ' ' + self.contacts.last_name
 
-    def get_by_natural_key(self, email):
-        return self.get(**{self.model.USERNAME_FIELD: email})
+    def get_role(self):
+        try:
+            role_obj = UserRole.objects.get(pk=self.id)
+        except UserRole.DoesNotExist:
+            pass
+        else:
+            return role_obj.role
+
+    def get_by_natural_key(self, username):
+        return self.get(**{self.model.USERNAME_FIELD: username})
 
 
 class UserRole(models.Model):
@@ -211,12 +229,12 @@ class DeliveryOperator(models.Model):
 
     @property
     def users_location_id(self):
-        return self.current_location.id
+        return self.location.id
 
 
 class OrderDelivery(models.Model):
-    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE)
-    delivery_operator = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE)
+    order = models.ForeignKey(AcmeOrder, on_delete=models.CASCADE, related_name="order_deliveries")
+    delivery_operator = models.ForeignKey(DeliveryOperator, on_delete=models.CASCADE, related_name="delivery_operator")
     delivery_status = models.CharField(max_length=20,
                                        choices=[(tag.value, tag.name) for tag in DeliveryStatusTypes.all()])
     start_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="order_delivery_start_location")

@@ -10,7 +10,7 @@ from rest_framework.status import HTTP_200_OK
 from web_app.exceptions import AcmeAPIException
 from web_app.models import AcmeUser
 from web_app.permissions import IsAuthenticatedOrMeta
-from web_app.serializers import ContactSerializer
+from web_app.serializers_default import ContactSerializer
 
 
 class AccountViewSet(viewsets.ViewSet):
