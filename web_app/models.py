@@ -157,6 +157,9 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
     token = models.CharField(max_length=255, unique=True)
     avatar = models.CharField(max_length=255, null=True)
 
+    groups = None
+    user_permissions = None
+
     is_staff = True
 
     objects = UserManager()
