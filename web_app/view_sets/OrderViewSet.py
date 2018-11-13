@@ -14,10 +14,10 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
     def get_serializer_class(self):
         if self.action == 'status':
-            return AcmeOrderStatusSerializer
+            return AcmeOrderStatusSerializer2
         elif self.action == 'delivery_status':
-            return OrderDeliveryCreateSerializer
-        return AcmeOrderSerializer
+            return OrderDeliveryCreateSerializer2
+        return AcmeOrderSerializer2
 
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def status(self, request, pk=None):
@@ -29,7 +29,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 return Response('', status=HTTP_200_OK)
 
         elif request.method == 'POST':
-            serializer = AcmeOrderStatusCreateSerializer(data=request.data)
+            serializer = AcmeOrderStatusCreateSerializer2(data=request.data)
             if serializer.is_valid():
                 serializer.save(order_id=pk)
                 return Response(serializer.data, status=HTTP_200_OK)
@@ -123,7 +123,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         except DeliveryOperator.DoesNotExist:
             return Response({'msg': 'Order is not found'}, HTTP_400_BAD_REQUEST)
 
-        serializer = AcmeOrderSerializer(order)
+        serializer = AcmeOrderSerializer2(order)
         return Response(serializer.data,
                         status=HTTP_200_OK)
 
@@ -146,7 +146,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     def location(self, request, pk=None):
         try:
             order = AcmeOrder.objects.get(pk=pk)
-            return Response(LocationSerializer(self.get_location(order)).data, status=HTTP_200_OK)
+            return Response(LocationSerializer2(self.get_location(order)).data, status=HTTP_200_OK)
         except Exception as e:
             return Response({'msg': 'Order or its status were not found'}, HTTP_400_BAD_REQUEST)
 
@@ -164,7 +164,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                                      delivery_status='pending', start_location_id=location.id,
                                      end_location_id=end_location_id, active_time_period='{[]}')
             delivery.save()
-            return Response(AcmeOrderDeliverySerializer(delivery).data, status=HTTP_201_CREATED)
+            return Response(AcmeOrderDeliverySerializer2(delivery).data, status=HTTP_201_CREATED)
         except Exception as e:
             return Response({'msg': str(e)}, status=HTTP_400_BAD_REQUEST)
 
@@ -174,44 +174,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         objects = AcmeOrder.objects.all()
         serialized_array = []
         for obj in objects:
-            serializer = AcmeOrderSerializer(obj)
+            serializer = AcmeOrderSerializer2(obj)
             serialized_array.append(serializer.data)
         print(serialized_array)
         return Response({'result': serialized_array[-1]}, status=HTTP_200_OK)
-
-        # return Response({
-        #     'total_count': 123,
-        #     'results': [{
-        #         'id': 1,
-        #         'delivery_period': {
-        #             'start': '2018-12-25 12:20:00',
-        #             'end': '2018-01-25 10:10:00'
-        #         },
-        #         'priority': 123,
-        #         'address_to': {
-        #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
-        #             'location': {
-        #                 'latitude': 35664564.31,
-        #                 'longitude': 67367546.3
-        #             }
-        #         },
-        #         'address_from': {
-        #             'address': 'Infinite loop, 1, Cupertino, CA, USA',
-        #             'location': {
-        #                 'latitude': 12343526.31,
-        #                 'longitude': 42445698.3
-        #             }
-        #                       },
-        #         'status': 'en_route',
-        #         'is_assigned': True,
-        #         'delivery_operator': {
-        #             'id': 123,
-        #             'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
-        #             'contacts': {
-        #                 'first_name': 'Johnathan',
-        #                 'last_name': 'Morrison',
-        #                 'phone_number': '8(800)555-35-35',
-        #             }
-        #         },
-        #     }]
-        # }, status=HTTP_200_OK)

@@ -5,27 +5,27 @@ from rest_framework.fields import ModelField, SerializerMethodField
 from .models import *
 
 
-class ContactSerializer(serializers.ModelSerializer):
+class ContactSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = '__all__'
 
 
-class AcmeCustomerSerializer(serializers.ModelSerializer):
-    contact = ContactSerializer()
+class AcmeCustomerSerializer2(serializers.ModelSerializer):
+    contact = ContactSerializer2()
 
     class Meta:
         model = AcmeCustomer
         fields = '__all__'
 
 
-class AcmeOrderStatusSerializer(serializers.ModelSerializer):
+class AcmeOrderStatusSerializer2(serializers.ModelSerializer):
     class Meta:
         model = AcmeOrderStatus
         fields = ['status', ]
 
 
-class AcmeOrderStatusCreateSerializer(serializers.ModelSerializer):
+class AcmeOrderStatusCreateSerializer2(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['status'] == 'stored' and 'warehouse' not in attrs:
@@ -37,21 +37,21 @@ class AcmeOrderStatusCreateSerializer(serializers.ModelSerializer):
         fields = ['status', 'warehouse', ]
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class LocationSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = '__all__'
 
 
-class AcmeUserSerializer(serializers.ModelSerializer):
-    contact = ContactSerializer()
+class AcmeUserSerializer2(serializers.ModelSerializer):
+    contact = ContactSerializer2()
 
     class Meta:
         model = AcmeUser
         fields = '__all__'
 
 
-class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
+class AcmeDeliveryOperatorSerializer2(serializers.ModelSerializer):
     avatar_url = SerializerMethodField()
 
     contacts = SerializerMethodField()
@@ -62,36 +62,36 @@ class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
         return obj.operator.avatar_url
 
     def get_contacts(self, obj):
-        return ContactSerializer(obj.operator.contact).data
+        return ContactSerializer2(obj.operator.contact).data
 
     class Meta:
         model = DeliveryOperator
         fields = ['id', 'avatar_url', 'contacts', ]
 
 
-class OrderDeliveryCreateSerializer(serializers.ModelSerializer):
+class OrderDeliveryCreateSerializer2(serializers.ModelSerializer):
     class Meta:
         model = OrderDelivery
         fields = ['delivery_status', ]
 
 
-class OrderDeliverySerializer(serializers.ModelSerializer):
-    delivery_operator = AcmeDeliveryOperatorSerializer()
+class OrderDeliverySerializer2(serializers.ModelSerializer):
+    delivery_operator = AcmeDeliveryOperatorSerializer2()
 
     class Meta:
         model = OrderDelivery
         fields = ['delivery_operator', ]
 
 
-class AcmeOrderSerializer(serializers.ModelSerializer):
-    start_location = LocationSerializer()
-    end_location = LocationSerializer()
+class AcmeOrderSerializer2(serializers.ModelSerializer):
+    start_location = LocationSerializer2()
+    end_location = LocationSerializer2()
     operators = SerializerMethodField()
     status = SerializerMethodField()
     is_assigned = SerializerMethodField()
 
     def get_operators(self, obj):
-        return AcmeDeliveryOperatorSerializer(
+        return AcmeDeliveryOperatorSerializer2(
             [od.delivery_operator for od in obj.order_deliveries.all()], many=True).data
 
     def get_status(self, obj):
@@ -110,11 +110,11 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
                   'scheduled_time_end_time', 'operators', 'status', 'is_assigned', ]
 
 
-class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
-    order = AcmeOrderSerializer()
-    delivery_operator = AcmeDeliveryOperatorSerializer()
-    start_location = LocationSerializer()
-    end_location = LocationSerializer()
+class AcmeOrderDeliverySerializer2(serializers.ModelSerializer):
+    order = AcmeOrderSerializer2()
+    delivery_operator = AcmeDeliveryOperatorSerializer2()
+    start_location = LocationSerializer2()
+    end_location = LocationSerializer2()
 
     class Meta:
         model = OrderDelivery
