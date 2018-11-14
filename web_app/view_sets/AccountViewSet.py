@@ -49,6 +49,6 @@ class AccountViewSet(viewsets.ViewSet):
             'id': user.id,
             'email': user.email,
             'location': user.region,
-            'avatar_url': user.get_avatar(),
+            'avatar_url': user.avatar,
             'contacts': contacts.data
         }, status=HTTP_200_OK)
