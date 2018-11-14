@@ -38,6 +38,9 @@ class AuthBackend(ModelBackend):
     Authenticates user
     """
 
+    def get_user(self, user_id):
+        return AcmeUser.objects.get(pk=user_id)
+
     def authenticate(self, request, email=None, username=None, password=None, app_key=None, **kwargs):
         if email is None:
             email = username
@@ -67,3 +70,9 @@ class AuthBackend(ModelBackend):
         true_key = APP_KEYS[key_type]
 
         return true_key == app_key
+
+    def _get_user_permissions(self, user_obj):
+        return set()
+
+    def _get_group_permissions(self, user_obj):
+        return set()
