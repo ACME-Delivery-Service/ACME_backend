@@ -8,7 +8,7 @@ from .models import *
 class ContactSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = '__all__'
+        fields = 'phone_number'
 
 
 class AcmeCustomerSerializer2(serializers.ModelSerializer):
@@ -45,7 +45,7 @@ class LocationSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ['address', 'longitude', 'latitude', ]
+        fields = ['address', 'location', ]
 
 
 class AcmeUserSerializer2(serializers.ModelSerializer):
@@ -60,8 +60,6 @@ class AcmeDeliveryOperatorSerializer2(serializers.ModelSerializer):
     avatar_url = SerializerMethodField()
 
     contacts = SerializerMethodField()
-
-    # current_location = LocationSerializer()
 
     def get_avatar_url(self, obj):
         return obj.operator.avatar_url
@@ -90,15 +88,18 @@ class OrderDeliverySerializer2(serializers.ModelSerializer):
 
 class AcmeOrderSerializer2(serializers.ModelSerializer):
     delivery_period = SerializerMethodField()
-    address_to = LocationSerializer2()
-    address_from = LocationSerializer2()
+    address_to = LocationSerializer2(source='end_location')
+    address_from = LocationSerializer2(source='start_location')
     status = SerializerMethodField()
     is_assigned = SerializerMethodField()
-    operators = SerializerMethodField()
+    delivery_operator = SerializerMethodField()
 
-    def get_operators(self, obj):
-        return AcmeDeliveryOperatorSerializer2(
-            [od.delivery_operator for od in obj.order_deliveries.all()], many=True).data
+    def get_delivery_operator(self, obj):
+        try:
+            return AcmeDeliveryOperatorSerializer2(
+                [od.delivery_operator for od in obj.order_deliveries.all()][-1]).data
+        except:
+            return None
 
     def get_status(self, obj):
         try:
@@ -114,8 +115,8 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = AcmeOrder
-        fields = ['scheduled_time_start_time', 'scheduled_time_end_time', 'priority',
-                  'start_location', 'end_location', 'operators', 'status', 'is_assigned', ]
+        fields = ['delivery_period', 'priority', 'address_to', 'address_from', 'status', 'is_assigned',
+                  'delivery_operator', ]
 
 
 class AcmeOrderDeliverySerializer2(serializers.ModelSerializer):
