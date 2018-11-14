@@ -97,7 +97,7 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
     def get_delivery_operator(self, obj):
         try:
             return AcmeDeliveryOperatorSerializer2(
-                [od.delivery_operator for od in obj.order_deliveries.all()][-1]).data
+                [od.delivery_operator for od in obj.order_deliveries.all()], many=True).data
         except:
             return None
 
@@ -115,7 +115,7 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = AcmeOrder
-        fields = ['delivery_period', 'priority', 'address_to', 'address_from', 'status', 'is_assigned',
+        fields = ['id', 'delivery_period', 'priority', 'address_to', 'address_from', 'status', 'is_assigned',
                   'delivery_operator', ]
 
 
