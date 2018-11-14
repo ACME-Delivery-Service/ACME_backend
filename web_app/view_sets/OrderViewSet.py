@@ -54,73 +54,6 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
-        '''
-        if not pk:
-            return Response({'msg': 'No ID provided'}, HTTP_400_BAD_REQUEST)
-
-        return Response({
-            'id': pk,
-            'delivery_period': {
-                'start': '2018-12-25 12:20:00',
-                'end': '2018-01-25 10:10:00'
-            },
-            'created_at': '1970-01-01 00:00:00',
-            'updated_at': '1980-01-01 00:00:00',
-            'priority': 242,
-            'address_from': {
-                'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                'location': {
-                    'latitude': 12343526.31,
-                    'longitude': 42445698.7
-                }
-            },
-            'address_to': {
-                'address': 'Infinite loop, 1, Cupertino, CA, USA',
-                'location': {
-                    'latitude': 35664564.31,
-                    'longitude': 67367546.3
-                }
-            },
-            'description': 'The client asked not to knock on the door, just leave it.',
-            'parcels_info': [
-                {
-                    'id': 123312,
-                    'weight': 1.38,
-                    'dimensions': {
-                        'x': 123.0,
-                        'y': 123.0,
-                        'z': 123.0
-                    },
-                    'shape': 'Unsupported yet',
-                    'description': 'Please be cautious while moving this one.'
-                }
-            ],
-            'customer_info': {
-                'id': 1243,
-                'contacts': {
-                    'first_name': 'Johnathan',
-                    'last_name': 'Morrison',
-                    'phone_number': '+1123412341234'
-                },
-            },
-            'driver_info': {
-                'id': 1234,
-                'avatar': 'https://backend.acme-company.site/static/uploads/ava1.jpg',
-                'contacts': {
-                    'first_name': 'Johnathan',
-                    'last_name': 'Morrison',
-                    'phone_number': '+1123412341234'
-                },
-            },
-            'location': {
-                'latitude': 35664564.31,
-                'longitude': 67367546.3
-            },
-            'status': 'en_route',
-            'delivery_status': 'pending'
-        }, status=HTTP_200_OK)
-        '''
-
         try:
             order = AcmeOrder.objects.get(pk=pk)
         except DeliveryOperator.DoesNotExist:
@@ -190,5 +123,49 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
         return Response({
             'total_count': len(serialized_array),
-            'result': serialized_array[::-1]
+            'results': serialized_array[::-1]
         }, status=HTTP_200_OK)
+
+"""
+
+'''
+/orders/list - GET запрос
+Требуется авторизация
+Имеет пагинацию - можно передать limit и offset, если не заданы, то limit = infinity offset = 0
+Возвращает
+{
+    # 'total_count': 123,
+    'results': [{
+        'id': 1,
+        'delivery_period': {
+            'start': '2018-12-25 12:20:00',
+            'end': '2018-01-25 10:10:00'
+        },
+        'priority': 123,
+        'address_to': {
+            'address': 'Infinite loop, 1, Cupertino, CA, USA',
+            'location': {
+                'latitude': 35664564.31,
+                'longitude': 67367546.3
+            }
+        },
+        'address_from': {
+            'address': 'Infinite loop, 1, Cupertino, CA, USA',
+            'location': {
+                'latitude': 12343526.31,
+                'longitude': 42445698.3
+            }
+        },
+        'status': Enum(),
+        'is_assigned': true,
+        'delivery_operator': {
+            'id': 123,
+            'avatar': 'http',
+            'contacts': {
+                'phone_number': '+757488',
+            }
+        }|null,
+    }]
+}
+'''
+"""

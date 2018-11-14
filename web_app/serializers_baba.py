@@ -38,9 +38,14 @@ class AcmeOrderStatusCreateSerializer2(serializers.ModelSerializer):
 
 
 class LocationSerializer2(serializers.ModelSerializer):
+    location = SerializerMethodField()
+
+    def get_location(self, obj):
+        return {'latitude': obj.latitude, 'longitude': obj.longitude}
+
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = ['address', 'longitude', 'latitude', ]
 
 
 class AcmeUserSerializer2(serializers.ModelSerializer):
@@ -84,11 +89,12 @@ class OrderDeliverySerializer2(serializers.ModelSerializer):
 
 
 class AcmeOrderSerializer2(serializers.ModelSerializer):
-    start_location = LocationSerializer2()
-    end_location = LocationSerializer2()
-    operators = SerializerMethodField()
+    delivery_period = SerializerMethodField()
+    address_to = LocationSerializer2()
+    address_from = LocationSerializer2()
     status = SerializerMethodField()
     is_assigned = SerializerMethodField()
+    operators = SerializerMethodField()
 
     def get_operators(self, obj):
         return AcmeDeliveryOperatorSerializer2(
@@ -102,12 +108,14 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
 
     def get_is_assigned(self, obj):
         return self.get_status(obj) in ['pending', 'in_progress', 'en_route']
-        # return len(OrderDelivery.objects.filter(order=obj)) > 0
+
+    def get_delivery_period(self, obj):
+        return {'start': obj.scheduled_time_start_time, 'end': obj.scheduled_time_end_time}
 
     class Meta:
         model = AcmeOrder
-        fields = ['priority', 'start_location', 'end_location', 'scheduled_time_start_time',
-                  'scheduled_time_end_time', 'operators', 'status', 'is_assigned', ]
+        fields = ['scheduled_time_start_time', 'scheduled_time_end_time', 'priority',
+                  'start_location', 'end_location', 'operators', 'status', 'is_assigned', ]
 
 
 class AcmeOrderDeliverySerializer2(serializers.ModelSerializer):

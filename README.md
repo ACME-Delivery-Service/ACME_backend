@@ -86,3 +86,6 @@ chmod -R 777 /var/run/uwsgi
 # /usr/local/bin/uwsgi: error while loading shared libraries: libpython3.5m.so.1.0: cannot open shared object file: No such file or directory
 ln -s /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 /usr/lib/x86_64-linux-gnu/libpython3.5m.so.1.0
 ```
+
+### Error: That port is already in use.
+```sudo lsof -t -i tcp:8000 | xargs kill -9
