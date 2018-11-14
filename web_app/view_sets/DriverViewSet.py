@@ -1,12 +1,15 @@
+import json
+import random
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from web_app.exceptions import *
+
+from web_app.models import *
 from web_app.serializers_default import *
-import json
-import random
-from django.http import HttpResponse, JsonResponse
 
 
 class DriverViewSet(viewsets.ViewSet):
@@ -122,21 +125,41 @@ class DriverViewSet(viewsets.ViewSet):
 
         return limit, offset
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def pending(self, request):
-        return Response(self.extract_orders_list(1, 'pending', self.format_pagination(request)), status=HTTP_200_OK)
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def pending(self, request, pk=None):
+        try:
+            pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
+                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
+            return Response(pending_orders, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def current(self, request):
-        return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def current(self, request, pk=None):
+        try:
+            current_orders = [AcmeOrderDeliverySerializer(order).data for order in
+                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
+            return Response(current_orders, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
 
     @action(detail=True, methods=['GET'], url_path='pending-orders', permission_classes=[IsAuthenticated])
     def pending_orders(self, request, pk=None):
-        return Response(self.extract_orders_list(1, 'pending', self.format_pagination(request)), status=HTTP_200_OK)
+        try:
+            pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
+                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
+            return Response(pending_orders, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
 
     @action(detail=True, methods=['GET'], url_path='current-orders', permission_classes=[IsAuthenticated])
     def current_orders(self, request, pk=None):
-        return Response(self.extract_orders_list(1, 'in_progress', self.format_pagination(request)), status=HTTP_200_OK)
+        try:
+            current_orders = [AcmeOrderDeliverySerializer(order).data for order in
+                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
+            return Response(current_orders, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
 
     @action(detail=True, methods=['GET'], url_path='co-contact', permission_classes=[IsAuthenticated])
     def co_contact(self, request, pk=None):
@@ -167,20 +190,25 @@ class DriverViewSet(viewsets.ViewSet):
             }
         }, status=HTTP_200_OK)
 
-    @action(detail=False, methods=['POST'], url_path='location', permission_classes=[IsAuthenticated])
-    def get_location(self, request):
-        return Response(status=HTTP_200_OK)
-
     @action(detail=True, methods=['GET'], url_path='location', permission_classes=[IsAuthenticated])
+    def get_location(self, request, pk=None):
+        try:
+            location = DeliveryOperator.objects.get(pk=pk).location
+            location_json = LocationSerializer(location).data
+            location_json['location_updated_at'] = '1970-01-01 10:10:10'
+            return Response(location_json, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
+
+    @action(detail=True, methods=['POST'], url_path='location', permission_classes=[IsAuthenticated])
     def set_location(self, request, pk=None):
-        return Response({
-            'id': 123,
-            'location': {
-                'latitude': 123.312,
-                'longitude': 321.234,
-            },
-            'location_updated_at': '1970-01-01 10:10:10',
-        }, status=HTTP_200_OK)
+        try:
+            location_info = json.loads(request.data)
+            location = Location(latitude=location_info['latitude'], longitude=location_info['longitude'], address="Universitetskaya St, 1, Innopolis, Respublika Tatarstan, 420500")
+            location.save()
+            return Response(LocationSerializer(location).data, status=HTTP_200_OK)
+        except Exception as e:
+            AcmeAPIException(str(e))
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):

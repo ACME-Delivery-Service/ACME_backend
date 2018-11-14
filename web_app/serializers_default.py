@@ -144,11 +144,30 @@ class AcmeDeliveryOperatorSerializer(serializers.ModelSerializer):
 
 
 class AcmeOrderDeliverySerializer(serializers.ModelSerializer):
-    order = AcmeOrderSerializer()
-    delivery_operator = AcmeDeliveryOperatorSerializer()
-    start_location = LocationSerializer()
-    end_location = LocationSerializer()
+    id = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
+    address_from = serializers.SerializerMethodField()
+    address_to = serializers.SerializerMethodField()
+    delivery_period = serializers.SerializerMethodField()
+
+    def get_delivery_period(self, obj):
+        return {
+            'start': obj.order.scheduled_time_start_time,
+            'end': obj.order.scheduled_time_end_time
+        }
+
+    def get_priority(self, obj):
+        return obj.order.priority
+
+    def get_id(self, obj):
+        return obj.order_id
+
+    def get_address_from(self, obj):
+        return LocationSerializer(obj.start_location).data
+
+    def get_address_to(self, obj):
+        return LocationSerializer(obj.end_location).data
 
     class Meta:
         model = OrderDelivery
-        fields = '__all__'
+        fields = ('id', 'delivery_period', 'priority', 'address_from', 'address_to', 'delivery_status')
