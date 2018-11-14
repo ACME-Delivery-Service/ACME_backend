@@ -52,14 +52,14 @@ class AcmeUserSerializer2(serializers.ModelSerializer):
 
 
 class AcmeDeliveryOperatorSerializer2(serializers.ModelSerializer):
-    avatar_url = SerializerMethodField()
+    avatar = SerializerMethodField()
 
     contacts = SerializerMethodField()
 
     # current_location = LocationSerializer()
 
-    def get_avatar_url(self, obj):
-        return obj.operator.avatar_url
+    def get_avatar(self, obj):
+        return obj.operator.avatar
 
     def get_contacts(self, obj):
         return ContactSerializer2(obj.operator.contact).data
