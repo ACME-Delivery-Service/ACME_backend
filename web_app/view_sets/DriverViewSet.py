@@ -190,25 +190,29 @@ class DriverViewSet(viewsets.ViewSet):
             }
         }, status=HTTP_200_OK)
 
-    @action(detail=True, methods=['GET'], url_path='location', permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['GET', 'POST'], url_path='location', permission_classes=[IsAuthenticated])
     def get_location(self, request, pk=None):
-        try:
-            location = DeliveryOperator.objects.get(pk=pk).location
-            location_json = LocationSerializer(location).data
-            location_json['location_updated_at'] = '1970-01-01 10:10:10'
-            return Response(location_json, status=HTTP_200_OK)
-        except Exception as e:
-            AcmeAPIException(str(e))
+        if request.method == 'GET':
+            try:
+                location = DeliveryOperator.objects.get(pk=pk).location
+                location_json = LocationSerializer(location).data
+                location_json['location_updated_at'] = DeliveryOperator.objects.get(pk=pk).location_last_updated
+                return Response(location_json, status=HTTP_200_OK)
+            except Exception as e:
+                return Response(str(e), status=HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                location_info = request.data
+                location = Location(latitude=location_info['latitude'], longitude=location_info['longitude'],
+                                    address="-")
+                location.save()
+                operator = DeliveryOperator.objects.get(pk=pk)
+                operator.location_id = location.pk
+                operator.save()
+                return Response(LocationSerializer(location).data, status=HTTP_200_OK)
+            except Exception as e:
+                return Response(str(e), status=HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['POST'], url_path='location', permission_classes=[IsAuthenticated])
-    def set_location(self, request, pk=None):
-        try:
-            location_info = json.loads(request.data)
-            location = Location(latitude=location_info['latitude'], longitude=location_info['longitude'], address="Universitetskaya St, 1, Innopolis, Respublika Tatarstan, 420500")
-            location.save()
-            return Response(LocationSerializer(location).data, status=HTTP_200_OK)
-        except Exception as e:
-            AcmeAPIException(str(e))
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):
