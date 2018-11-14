@@ -62,7 +62,7 @@ class AcmeDeliveryOperatorSerializer2(serializers.ModelSerializer):
         return obj.operator.avatar
 
     def get_contacts(self, obj):
-        return ContactSerializer2(obj.operator.contact).data
+        return ContactSerializer2(obj.operator.contacts).data
 
     class Meta:
         model = DeliveryOperator
