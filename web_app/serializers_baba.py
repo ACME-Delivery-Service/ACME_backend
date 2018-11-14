@@ -66,7 +66,7 @@ class AcmeDeliveryOperatorSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryOperator
-        fields = ['id', 'avatar_url', 'contacts', ]
+        fields = ['id', 'avatar', 'contacts', ]
 
 
 class OrderDeliveryCreateSerializer2(serializers.ModelSerializer):
