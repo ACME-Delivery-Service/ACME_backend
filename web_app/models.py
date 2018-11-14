@@ -182,6 +182,7 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
     def is_superuser(self):
         return self.get_role() == AcmeRoles.CEO.value
 
+    @property
     def get_avatar(self):
         if self.avatar:
             return self.avatar
