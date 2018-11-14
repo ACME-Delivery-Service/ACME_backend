@@ -190,5 +190,5 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
         return Response({
             'total_count': len(serialized_array),
-            'result': serialized_array[-1]
+            'result': serialized_array[::-1]
         }, status=HTTP_200_OK)
