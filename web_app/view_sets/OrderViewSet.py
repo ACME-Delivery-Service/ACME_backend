@@ -49,15 +49,17 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     def delivery_status(self, request, pk=None):
         try:
             order_delivery = OrderDelivery.objects.filter(order__id=pk).order_by('-id')[0]
+            if not order_delivery:
+                raise AcmeAPIException('Order not found')
 
-            serializer = self.get_serializer(order_delivery, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            new_status = request.data.get('status')
+            order_delivery.delivery_status = new_status
+            order_delivery.save()
 
-            return Response(serializer.data, status=HTTP_200_OK)
+            return Response(status=HTTP_200_OK)
 
-        except:
-            return Response('', status=HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
