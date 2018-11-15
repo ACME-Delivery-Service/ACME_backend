@@ -32,11 +32,15 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 raise AcmeAPIException('Order not found')
 
         elif request.method == 'POST':
-            serializer = AcmeOrderStatusCreateSerializer2(data=request.data)
-            if serializer.is_valid():
-                serializer.save(order_id=pk)
-                return Response(serializer.data, status=HTTP_200_OK)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            order_status = AcmeOrderStatus.objects.get(pk=pk)
+            if not order_status:
+                raise AcmeAPIException('Order not found')
+
+            new_status = request.data.get('status')
+            order_status.status = new_status
+            order_status.save()
+
+            return Response(status=HTTP_200_OK)
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
     def delivery_status(self, request, pk=None):
@@ -125,6 +129,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             'total_count': len(serialized_array),
             'results': serialized_array[::-1]
         }, status=HTTP_200_OK)
+
 
 """
 
