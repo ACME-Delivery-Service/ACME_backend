@@ -173,7 +173,9 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
+    BASE_AVATAR = 'https://backend.acme-company.site/static/uploads/'
+    DEFAULT_AVATAR = 'ava1.jpg'
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['region', 'contacts_id']
 
@@ -187,9 +189,14 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def get_avatar(self):
-        if self.avatar:
-            return self.avatar
-        return self.DEFAULT_AVATAR
+        ava = self.avatar
+        if not self.avatar:
+            ava = self.DEFAULT_AVATAR
+
+        if not ava.startswith('https://'):
+            ava = self.BASE_AVATAR + ava
+
+        return ava
 
     def get_full_name(self):
         return self.get_short_name() + ' (' + self.email + ')'
