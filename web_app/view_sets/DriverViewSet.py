@@ -19,7 +19,10 @@ class DriverViewSet(viewsets.ViewSet):
         pending_orders = OrderDelivery.objects.filter(delivery_operator_id=driver.id, delivery_status=status)
         orders = [AcmeOrderDeliverySerializer(order).data for order in pending_orders]
 
-        return orders
+        return {
+            'total_count': len(orders),
+            'results': orders,
+        }
 
     def format_pagination(self, request):
         limit = request.query_params.get('limit', None)
