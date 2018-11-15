@@ -8,7 +8,7 @@ from .models import *
 class ContactSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = 'phone_number'
+        fields = '__all__'
 
 
 class AcmeCustomerSerializer2(serializers.ModelSerializer):
@@ -97,10 +97,18 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
     delivery_operator = SerializerMethodField()
 
     def get_delivery_operator(self, obj):
+        """
+        :param AcmeOrder obj:
+        :return:
+        """
         try:
-            return AcmeDeliveryOperatorSerializer2(
-                [od.delivery_operator for od in obj.order_deliveries.all()][-1]).data
-        except:
+            norm_status = [DeliveryStatusTypes.IN_PROGRESS.value, DeliveryStatusTypes.PENDING.value]
+            cur_delivery = obj.order_deliveries.filter(delivery_status__in=norm_status).get()
+            operator = cur_delivery.delivery_operator
+
+            return AcmeDeliveryOperatorSerializer2(operator).data
+        except Exception as e:
+            print(e)
             return None
 
     def get_status(self, obj):
@@ -117,7 +125,7 @@ class AcmeOrderSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = AcmeOrder
-        fields = ['delivery_period', 'priority', 'address_to', 'address_from', 'status', 'is_assigned',
+        fields = ['id', 'delivery_period', 'priority', 'address_to', 'address_from', 'status', 'is_assigned',
                   'delivery_operator', ]
 
 

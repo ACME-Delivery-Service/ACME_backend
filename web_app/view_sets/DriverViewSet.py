@@ -14,109 +14,14 @@ from web_app.serializers_default import *
 
 class DriverViewSet(viewsets.ViewSet):
 
-    def extract_orders_list(self, driver_id, status, pagination):
-        pending_orders = [
-            {
-                'id': 1,
-                'delivery_period': {
-                    'start': '2018-10-25 22:20:00',
-                    'end': '2018-11-25 20:10:00'
-                },
-                'priority': 2,
-                'address_from': {
-                    'address': 'Спортивная ул., 134-136, Иннополис, Респ. Татарстан, 422594',
-                    'location': {
-                        'latitude': 55.750194,
-                        'longitude': 48.742944
-                    }
-                },
-                'address_to': {
-                    'address': 'Unnamed Road, Иннополис, Респ. Татарстан, 422591',
-                    'location': {
-                        'latitude': 55.748224,
-                        'longitude': 48.741482
-                    }
-                },
-                'delivery_status': 'pending',
-            },
-            {
-                'id': 2,
-                'delivery_period': {
-                    'start': '2018-10-25 22:20:00',
-                    'end': '2018-11-25 20:10:00'
-                },
-                'priority': 2,
-                'address_from': {
-                    'address': 'Университетская ул., Иннополис, Респ. Татарстан, 422594',
-                    'location': {
-                        'latitude': 55.750138,
-                        'longitude': 48.753595
-                    }
-                },
-                'address_to': {
-                    'address': 'Inf loop, 1, Cuper, CA, USA',
-                    'location': {
-                        'latitude': 35664564.31,
-                        'longitude': 67367546.3
-                    }
-                },
-                'delivery_status': 'pending',
-            }
-        ]
-
-        current_orders = [
-            {
-                'id': 3,
-                'delivery_period': {
-                    'start': '2018-12-25 12:20:00',
-                    'end': '2018-01-25 10:10:00'
-                },
-                'priority': 242,
-                'address_from': {
-                    'address': 'Центральная ул., Казань, Респ. Татарстан, 420049',
-                    'location': {
-                        'latitude': 55.776223,
-                        'longitude': 49.148516
-                    }},
-                'address_to': {
-                    'address': 'Вахитовский р-н, Казань, Респ. Татарстан, 420021',
-                    'location': {
-                        'latitude': 55.776685,
-                        'longitude': 49.116505
-                    }
-                },
-                'delivery_status': 'in_progress',
-            },
-            {
-                'id': 4,
-                'delivery_period': {
-                    'start': '2018-12-25 12:20:00',
-                    'end': '2018-01-25 10:10:00'
-                },
-                'priority': 242,
-                'address_from': {
-                    'address': 'ул. Рихарда Зорге, Казань, Респ. Татарстан, 420101',
-                    'location': {
-                        'latitude': 55.760942,
-                        'longitude': 49.189924
-                    }
-                },
-                'address_to': {
-                    'address': 'Профсоюзная ул., 8, Казань, Респ. Татарстан, 420111',
-                    'location': {
-                        'latitude': 55.793669,
-                        'longitude': 49.110707
-                    }
-                },
-                'delivery_status': 'in_progress',
-            }
-        ]
-
-        corders = pending_orders if status == 'pending' else current_orders
+    def extract_orders_list(self, user_id, status, pagination):
+        driver = DeliveryOperator.objects.get(operator_id=user_id)
+        pending_orders = OrderDelivery.objects.filter(delivery_operator_id=driver.id, delivery_status=status)
+        orders = [AcmeOrderDeliverySerializer(order).data for order in pending_orders]
 
         return {
-            'total_count': len(corders),
-            'results': corders
+            'total_count': len(orders),
+            'results': orders,
         }
 
     def format_pagination(self, request):
@@ -125,39 +30,35 @@ class DriverViewSet(viewsets.ViewSet):
 
         return limit, offset
 
-    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
-    def pending(self, request, pk=None):
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def pending(self, request):
         try:
-            pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
-            return Response(pending_orders, status=HTTP_200_OK)
+            orders = self.extract_orders_list(request.user.id, 'pending', self.format_pagination(request))
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
-    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
-    def current(self, request, pk=None):
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def current(self, request):
         try:
-            current_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
-            return Response(current_orders, status=HTTP_200_OK)
+            orders = self.extract_orders_list(request.user.id, 'in_progress', self.format_pagination(request))
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
     @action(detail=True, methods=['GET'], url_path='pending-orders', permission_classes=[IsAuthenticated])
     def pending_orders(self, request, pk=None):
         try:
-            pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
-            return Response(pending_orders, status=HTTP_200_OK)
+            orders = self.extract_orders_list(pk, 'pending', self.format_pagination(request))
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
     @action(detail=True, methods=['GET'], url_path='current-orders', permission_classes=[IsAuthenticated])
     def current_orders(self, request, pk=None):
         try:
-            current_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
-            return Response(current_orders, status=HTTP_200_OK)
+            orders = self.extract_orders_list(pk, 'in_progress', self.format_pagination(request))
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
@@ -212,7 +113,6 @@ class DriverViewSet(viewsets.ViewSet):
                 return Response(LocationSerializer(location).data, status=HTTP_200_OK)
             except Exception as e:
                 return Response(str(e), status=HTTP_400_BAD_REQUEST)
-
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):

@@ -32,25 +32,34 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 raise AcmeAPIException('Order not found')
 
         elif request.method == 'POST':
-            serializer = AcmeOrderStatusCreateSerializer2(data=request.data)
-            if serializer.is_valid():
-                serializer.save(order_id=pk)
-                return Response(serializer.data, status=HTTP_200_OK)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            try:
+                order_status = AcmeOrderStatus.objects.get(pk=pk)
+                if not order_status:
+                    raise AcmeAPIException('Order not found')
 
-    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+                new_status = request.data.get('status')
+                order_status.status = new_status
+                order_status.save()
+
+                return Response(status=HTTP_200_OK)
+            except AcmeOrderStatus.DoesNotExist:
+                raise AcmeAPIException('Order don\'t have status')
+
+    @action(detail=True, methods=['POST'], url_path='delivery-status', permission_classes=[IsAuthenticated])
     def delivery_status(self, request, pk=None):
         try:
             order_delivery = OrderDelivery.objects.filter(order__id=pk).order_by('-id')[0]
+            if not order_delivery:
+                raise AcmeAPIException('Order not found')
 
-            serializer = self.get_serializer(order_delivery, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            new_status = request.data.get('status')
+            order_delivery.delivery_status = new_status
+            order_delivery.save()
 
-            return Response(serializer.data, status=HTTP_200_OK)
+            return Response(status=HTTP_200_OK)
 
-        except:
-            return Response('', status=HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def info(self, request, pk=None):
@@ -125,6 +134,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             'total_count': len(serialized_array),
             'results': serialized_array[::-1]
         }, status=HTTP_200_OK)
+
 
 """
 

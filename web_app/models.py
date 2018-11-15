@@ -29,7 +29,7 @@ class AcmeCustomer(models.Model):
         return self.contact.id
 
     def __str__(self):
-        return '(%s) %s %s - contact' % (self.pk, self.contact.first_name, self.contact.last_name)
+        return '(%s) %s %s - customer' % (self.pk, self.contact.first_name, self.contact.last_name)
 
 
 class Location(models.Model):
@@ -131,6 +131,9 @@ class AcmeOrderStatus(models.Model):
     def orders_order_id(self):
         return self.order.id
 
+    def __str__(self):
+        return '(%s) order#%s - %s' % (self.pk, self.order.id, self.status)
+
 
 class AcmeRegions(Enum):
     EU = 'EU'
@@ -160,8 +163,8 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
     contacts = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
-    token = models.CharField(max_length=255, unique=True)
-    avatar = models.CharField(max_length=255, null=True)
+    token = models.CharField(max_length=255, unique=True, blank=True)
+    avatar = models.CharField(max_length=255, null=True, blank=True)
 
     groups = None
     user_permissions = None
@@ -170,7 +173,9 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    DEFAULT_AVATAR = 'https://backend.acme-company.site/static/uploads/ava1.jpg'
+    BASE_AVATAR = 'https://backend.acme-company.site/static/uploads/'
+    DEFAULT_AVATAR = 'ava1.jpg'
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['region', 'contacts_id']
 
@@ -183,10 +188,19 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
         return self.get_role() == AcmeRoles.CEO.value
 
     @property
-    def get_avatar(self):
-        if self.avatar:
-            return self.avatar
-        return self.DEFAULT_AVATAR
+    def avatar(self):
+        return self.BASE_AVATAR + self.DEFAULT_AVATAR
+
+    # def get_avatar_display(self):
+    #     print('1')
+    #     ava = self.avatar
+    #     if not ava:
+    #         ava = self.DEFAULT_AVATAR
+    #
+    #     if not ava.startswith('https://'):
+    #         ava = self.BASE_AVATAR + ava
+    #
+    #     return ava
 
     def get_full_name(self):
         return self.get_short_name() + ' (' + self.email + ')'
@@ -214,6 +228,9 @@ class UserRole(models.Model):
     def roles_users_id(self):
         return self.user.id
 
+    def __str__(self):
+        return '(%s) %s - %s' % (self.pk, self.user.email, self.role)
+
 
 class DeliveryStatusTypes(Enum):
     PENDING = 'pending'
@@ -237,6 +254,9 @@ class DeliveryOperator(models.Model):
     @property
     def users_location_id(self):
         return self.location.id
+
+    def __str__(self):
+        return '(%s) %s - %s' % (self.pk, self.operator.email, self.operator.id)
 
 
 class OrderDelivery(models.Model):
@@ -266,3 +286,7 @@ class OrderDelivery(models.Model):
     @property
     def acme_order_end_location_id(self):
         return self.end_location.id
+
+    def __str__(self):
+        return '(%s) order#%s driver#%s - %s' % (
+            self.pk, self.order.id, self.delivery_operator.id, self.delivery_status)
