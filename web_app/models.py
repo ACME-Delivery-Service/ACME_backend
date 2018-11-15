@@ -179,6 +179,13 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['region', 'contacts_id']
 
+    # def __getattr__(self, item):
+    #     if item == 'avatar' and self._name_dirty:
+    #         return self.avatar
+    #
+    #     return super(AcmeUser, self).__getattr__(item)
+
+
     @property
     def users_contact_id(self):
         return self.contacts.id
@@ -188,10 +195,11 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
         return self.get_role() == AcmeRoles.CEO.value
 
     @property
-    def get_avatar(self):
-        ava = self.avatar
-        if not self.avatar:
-            ava = self.DEFAULT_AVATAR
+    def avatar(self):
+        # ava = self._meta.get_field('avatar')
+        # if not self.avatar:
+        #     ava = self.DEFAULT_AVATAR
+        ava = self.DEFAULT_AVATAR
 
         if not ava.startswith('https://'):
             ava = self.BASE_AVATAR + ava
