@@ -214,6 +214,9 @@ class UserRole(models.Model):
     def roles_users_id(self):
         return self.user.id
 
+    def __str__(self):
+        return '(%s) %s - %s' % (self.pk, self.user.email, self.role)
+
 
 class DeliveryStatusTypes(Enum):
     PENDING = 'pending'
@@ -237,6 +240,9 @@ class DeliveryOperator(models.Model):
     @property
     def users_location_id(self):
         return self.location.id
+
+    def __str__(self):
+        return '(%s) %s - %s' % (self.pk, self.operator.email, self.operator.id)
 
 
 class OrderDelivery(models.Model):
@@ -266,3 +272,7 @@ class OrderDelivery(models.Model):
     @property
     def acme_order_end_location_id(self):
         return self.end_location.id
+
+    def __str__(self):
+        return '(%s) order#%s driver#%s - %s' % (
+        self.pk, self.order.id, self.delivery_operator.id, self.delivery_status)
