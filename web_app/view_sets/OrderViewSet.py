@@ -45,7 +45,7 @@ class OrderViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             except AcmeOrderStatus.DoesNotExist:
                 raise AcmeAPIException('Order don\'t have status')
 
-    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['POST'], url_path='delivery-status', permission_classes=[IsAuthenticated])
     def delivery_status(self, request, pk=None):
         try:
             order_delivery = OrderDelivery.objects.filter(order__id=pk).order_by('-id')[0]
