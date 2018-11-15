@@ -163,8 +163,8 @@ class AcmeUser(AbstractBaseUser, PermissionsMixin):
     region = models.CharField(max_length=5, choices=[(tag.value, tag.name) for tag in AcmeRegions.all()])
     email = models.EmailField(max_length=255, unique=True)
     contacts = models.ForeignKey(Contact, on_delete=models.DO_NOTHING)
-    token = models.CharField(max_length=255, unique=True)
-    avatar = models.CharField(max_length=255, null=True)
+    token = models.CharField(max_length=255, unique=True, blank=True)
+    avatar = models.CharField(max_length=255, null=True, blank=True)
 
     groups = None
     user_permissions = None
