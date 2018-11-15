@@ -54,7 +54,7 @@ class DriverViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['GET'], url_path='current-orders', permission_classes=[IsAuthenticated])
     def current_orders(self, request, pk=None):
         try:
-            orders = self.extract_orders_list(pk, 'pending', self.format_pagination(request))
+            orders = self.extract_orders_list(pk, 'in_progress', self.format_pagination(request))
             return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
