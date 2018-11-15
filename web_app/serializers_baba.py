@@ -8,7 +8,7 @@ from .models import *
 class ContactSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ['phone_number', ]
+        fields = '__all__'
 
 
 class AcmeCustomerSerializer2(serializers.ModelSerializer):
