@@ -29,7 +29,7 @@ class AcmeCustomer(models.Model):
         return self.contact.id
 
     def __str__(self):
-        return '(%s) %s %s - contact' % (self.pk, self.contact.first_name, self.contact.last_name)
+        return '(%s) %s %s - customer' % (self.pk, self.contact.first_name, self.contact.last_name)
 
 
 class Location(models.Model):
