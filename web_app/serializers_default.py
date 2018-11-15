@@ -46,6 +46,7 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField()
     parcels_info = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    delivery_status = serializers.SerializerMethodField()
     delivery_period = serializers.SerializerMethodField()
 
     def get_customer_info(self, obj):
@@ -66,7 +67,11 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         order_statuses = AcmeOrderStatus.objects.filter(order_id=obj.pk)
         current_status = order_statuses.order_by('created_on').last()
-        return current_status.status if current_status != None else "None"
+        return current_status.status if current_status is not None else None
+
+    def get_delivery_status(self, obj):
+        order_delivery = OrderDelivery.objects.filter(order_id=obj.pk).get()
+        return order_delivery.delivery_status if order_delivery is not None else None
 
     def get_parcels_info(selfself, obj):
         parcels = Parcel.objects.filter(order_id=obj.pk)
@@ -92,7 +97,7 @@ class AcmeOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcmeOrder
         fields = ('id', 'delivery_period', 'priority', 'address_from', 'address_to', 'description', 'parcels_info',
-                  'customer_info', 'status')
+                  'customer_info', 'status', 'delivery_status', )
 
 
 class AcmeUserSerializer(serializers.ModelSerializer):
