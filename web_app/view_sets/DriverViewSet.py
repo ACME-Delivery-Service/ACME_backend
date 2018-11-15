@@ -125,21 +125,25 @@ class DriverViewSet(viewsets.ViewSet):
 
         return limit, offset
 
-    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
-    def pending(self, request, pk=None):
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def pending(self, request):
         try:
-            pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
-            return Response(pending_orders, status=HTTP_200_OK)
+            pk = request.user.id
+            pending_orders = OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")
+            orders = [AcmeOrderDeliverySerializer(order).data for order in pending_orders]
+
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
-    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
-    def current(self, request, pk=None):
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def current(self, request):
         try:
-            current_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
-            return Response(current_orders, status=HTTP_200_OK)
+            pk = request.user.id
+            current_orders = OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")
+            orders = [AcmeOrderDeliverySerializer(order).data for order in current_orders]
+
+            return Response(orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
 
@@ -147,7 +151,7 @@ class DriverViewSet(viewsets.ViewSet):
     def pending_orders(self, request, pk=None):
         try:
             pending_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
+                              OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="pending")]
             return Response(pending_orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
@@ -156,7 +160,7 @@ class DriverViewSet(viewsets.ViewSet):
     def current_orders(self, request, pk=None):
         try:
             current_orders = [AcmeOrderDeliverySerializer(order).data for order in
-                          OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
+                              OrderDelivery.objects.filter(delivery_operator_id=pk, delivery_status="in_progress")]
             return Response(current_orders, status=HTTP_200_OK)
         except Exception as e:
             AcmeAPIException(str(e))
@@ -212,7 +216,6 @@ class DriverViewSet(viewsets.ViewSet):
                 return Response(LocationSerializer(location).data, status=HTTP_200_OK)
             except Exception as e:
                 return Response(str(e), status=HTTP_400_BAD_REQUEST)
-
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def list(self, request):

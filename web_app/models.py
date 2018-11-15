@@ -131,6 +131,9 @@ class AcmeOrderStatus(models.Model):
     def orders_order_id(self):
         return self.order.id
 
+    def __str__(self):
+        return '(%s) order#%s - %s' % (self.pk, self.order.id, self.status)
+
 
 class AcmeRegions(Enum):
     EU = 'EU'
@@ -275,4 +278,4 @@ class OrderDelivery(models.Model):
 
     def __str__(self):
         return '(%s) order#%s driver#%s - %s' % (
-        self.pk, self.order.id, self.delivery_operator.id, self.delivery_status)
+            self.pk, self.order.id, self.delivery_operator.id, self.delivery_status)
